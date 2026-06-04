@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hospital_staff_access_wizard_manager,hospital.staff.access.wizard.manager,model_hospital_staff_access_wizard,base_hospital_management.base_hospital_management_group_manager,1,1,1,1
+access_hospital_staff_hr_employee_manager,hr.employee.hospital.manager,hr.model_hr_employee,base_hospital_management.base_hospital_management_group_manager,1,1,1,0
+access_hospital_staff_hr_job_manager,hr.job.hospital.manager,hr.model_hr_job,base_hospital_management.base_hospital_management_group_manager,1,1,1,0
+access_hospital_access_right_manager,hospital.access.right.manager,model_hospital_access_right,base_hospital_management.base_hospital_management_group_manager,1,0,0,0

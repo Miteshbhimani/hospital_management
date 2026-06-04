@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <!--    Inherit Hr employee for view-->
+    <record id="view_employee_form" model="ir.ui.view">
+        <field name="name">hr.employee.view.form.inherit.base.hospital.management</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='coach_id']" position="after">
+                <field name="doctor" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="consultancy_charge" invisible="job_title != 'Doctor'"/>
+                <field name="time_avg" widget="float_time" invisible="job_title != 'Doctor'"/>
+                <field name="consultancy_type" invisible="job_title != 'Doctor'"/>
+            </xpath>
+            <xpath expr="//field[@name='coach_id']" position="replace">
+                <field name="coach_id" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='certificate']" position="after">
+                <field name="degree_ids" widget="many2many_tags" invisible="doctor == False"/>
+                <field name="specialization_ids" widget="many2many_tags" invisible="doctor == False"/>
+            </xpath>
+        </field>
+    </record>
+    <!--    Lab technician menu action-->
+    <record id="hospital_hr_employee_kanban_detail_view" model="ir.ui.view">
+    <field name="name">hr.employee.hospital.kanban.details</field>
+    <field name="model">hr.employee</field>
+    <field name="arch" type="xml">
+        <kanban class="o_hms_detail_kanban o_hms_staff_kanban" sample="1">
+            <field name="id"/>
+            <field name="name"/>
+            <field name="image_128"/>
+            <field name="job_id"/>
+            <field name="job_title"/>
+            <field name="department_id"/>
+            <field name="work_email"/>
+            <field name="work_phone"/>
+            <field name="mobile_phone"/>
+            <field name="parent_id"/>
+            <field name="coach_id"/>
+            <field name="company_id"/>
+            <field name="doctor"/>
+            <field name="consultancy_charge"/>
+            <field name="time_avg"/>
+            <field name="consultancy_type"/>
+            <field name="currency_id"/>
+            <templates>
+                <t t-name="card" class="flex-row">
+                    <aside class="o_hms_kanban_aside">
+                        <field name="image_128" widget="image" alt="Staff Avatar" class="o_hms_kanban_avatar"/>
+                    </aside>
+                    <main class="o_hms_kanban_main ms-3">
+                        <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+                            <field class="fw-bold fs-5 text-truncate" name="name"/>
+                            <span class="badge text-bg-info" t-if="record.doctor.raw_value">Doctor</span>
+                        </div>
+                        <div class="text-muted small mb-2" t-if="record.job_id.raw_value or record.job_title.raw_value">
+                            <i class="fa fa-briefcase me-1" title="Job Position"/> <field name="job_id" t-if="record.job_id.raw_value"/><field name="job_title" t-if="!record.job_id.raw_value and record.job_title.raw_value"/>
+                        </div>
+                        <div class="o_hms_kanban_meta_grid small">
+                            <span t-if="record.department_id.raw_value"><i class="fa fa-sitemap me-1" title="Department"/> <field name="department_id"/></span>
+                            <span t-if="record.work_email.raw_value"><i class="fa fa-envelope me-1" title="Email"/> <field name="work_email"/></span>
+                            <span t-if="record.mobile_phone.raw_value"><i class="fa fa-mobile me-1" title="Mobile"/> <field name="mobile_phone"/></span>
+                            <span t-if="record.work_phone.raw_value"><i class="fa fa-phone me-1" title="Work Phone"/> <field name="work_phone"/></span>
+                            <span t-if="record.parent_id.raw_value"><i class="fa fa-user-tie me-1" title="Manager"/> <field name="parent_id"/></span>
+                            <span t-if="record.coach_id.raw_value"><i class="fa fa-user-check me-1" title="Coach"/> <field name="coach_id"/></span>
+                            <span t-if="record.consultancy_charge.raw_value"><i class="fa fa-money me-1" title="Consultation Charge"/> <field name="consultancy_charge" widget="monetary" options="{'currency_field': 'currency_id'}"/></span>
+                            <span t-if="record.time_avg.raw_value"><i class="fa fa-clock-o me-1" title="Average Consultation Time"/> <field name="time_avg" widget="float_time"/></span>
+                        </div>
+                        <footer class="mt-2 pt-2 border-top d-flex justify-content-between align-items-center gap-2">
+                            <span class="badge text-bg-light" t-if="record.consultancy_type.raw_value"><field name="consultancy_type"/></span>
+                            <span class="text-muted small" t-if="record.company_id.raw_value"><i class="fa fa-building me-1" title="Company"/> <field name="company_id"/></span>
+                        </footer>
+                    </main>
+                </t>
+            </templates>
+        </kanban>
+    </field>
+</record><record id="lab_technician_action" model="ir.actions.act_window">
+        <field name="name">Lab Technician</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">kanban,list,form,activity</field>
+        <field name="domain">[('job_id.name','=','Lab Technician')]</field>
+        <field name="view_id" ref="hospital_hr_employee_kanban_detail_view"/>
+    </record>
+    <!--    Nurse menu action-->
+    <record id="hospital_nurse_action" model="ir.actions.act_window">
+        <field name="name">Nurse</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">kanban,list,form,activity</field>
+        <field name="domain">[('job_id.name','=','Nurse')]</field>
+        <field name="view_id" ref="hospital_hr_employee_kanban_detail_view"/>
+    </record>
+    <!--    Staff menu action-->
+    <record id="hr_employee_action" model="ir.actions.act_window">
+        <field name="name">Employees</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">kanban,list,form,activity</field>
+    <field name="view_id" ref="hospital_hr_employee_kanban_detail_view"/></record>
+    <!--Staff menu-->
+    <menuitem id="hr_employee_menu" parent="hospital_menu_configuration" name="Staff" action="hr_employee_action" sequence="0"/>
+</odoo>

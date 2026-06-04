@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <!--Inherit product template to add medicine and vaccine fields-->
+    <record id="product_template_only_form_view" model="ir.ui.view">
+        <field name="name">product.template.view.form.inherit.base.hospital.management</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_tooltip']" position="before">
+                <field name="vaccine_ok" invisible="medicine_ok == True"/>
+                <field name="medicine_ok" invisible="vaccine_ok == True"/>
+                <field name="medicine_brand_id" invisible="(vaccine_ok == False) and                        (medicine_ok == False)"/>
+                <field name="pharmacy_id" invisible="(vaccine_ok == False) and (medicine_ok == False)" options="{'no_create': True, 'no_edit': True}"/>
+            </xpath>
+        </field>
+    </record>
+    <!--    Vaccine menu action-->
+    <record id="hospital_product_template_kanban_detail_view" model="ir.ui.view">
+    <field name="name">product.template.hospital.kanban.details</field>
+    <field name="model">product.template</field>
+    <field name="arch" type="xml">
+        <kanban class="o_hms_detail_kanban o_hms_product_kanban" sample="1">
+            <field name="id"/>
+            <field name="name"/>
+            <field name="image_128"/>
+            <field name="default_code"/>
+            <field name="medicine_ok"/>
+            <field name="vaccine_ok"/>
+            <field name="medicine_brand_id"/>
+            <field name="pharmacy_id"/>
+            <field name="categ_id"/>
+            <field name="uom_id"/>
+            <field name="list_price"/>
+            <field name="qty_available"/>
+            <field name="currency_id"/>
+            <templates>
+                <t t-name="card" class="flex-row">
+                    <aside class="o_hms_kanban_aside">
+                        <field name="image_128" widget="image" alt="Product Image" class="o_hms_kanban_avatar"/>
+                    </aside>
+                    <main class="o_hms_kanban_main ms-3">
+                        <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+                            <field class="fw-bold fs-5 text-truncate" name="name"/>
+                            <div class="text-nowrap">
+                                <span class="badge text-bg-success" t-if="record.medicine_ok.raw_value">Medicine</span>
+                                <span class="badge text-bg-primary" t-if="record.vaccine_ok.raw_value">Vaccine</span>
+                            </div>
+                        </div>
+                        <div class="text-muted small mb-2" t-if="record.default_code.raw_value or record.medicine_brand_id.raw_value">
+                            <span t-if="record.default_code.raw_value"><i class="fa fa-barcode me-1" title="Internal Reference"/> <field name="default_code"/></span>
+                            <span t-if="record.medicine_brand_id.raw_value"><i class="fa fa-tag ms-2 me-1" title="Brand"/> <field name="medicine_brand_id"/></span>
+                        </div>
+                        <div class="o_hms_kanban_meta_grid small">
+                            <span t-if="record.pharmacy_id.raw_value"><i class="fa fa-medkit me-1" title="Pharmacy"/> <field name="pharmacy_id"/></span>
+                            <span t-if="record.categ_id.raw_value"><i class="fa fa-folder me-1" title="Category"/> <field name="categ_id"/></span>
+                            <span><i class="fa fa-cubes me-1" title="On Hand"/> <field name="qty_available"/> <field name="uom_id"/></span>
+                            <span><i class="fa fa-money me-1" title="Sales Price"/> <field name="list_price" widget="monetary" options="{'currency_field': 'currency_id'}"/></span>
+                        </div>
+                    </main>
+                </t>
+            </templates>
+        </kanban>
+    </field>
+</record><record id="product_template_action_vaccine" model="ir.actions.act_window">
+        <field name="name">Vaccine</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="view_id" ref="hospital_product_template_kanban_detail_view"/><field name="domain">[('vaccine_ok','=',True)]</field>
+        <field name="context">{'default_vaccine_ok': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Vaccine
+            </p>
+        </field>
+    </record>
+    <!--    Medicine menu action-->
+    <record id="product_template_action_medicine" model="ir.actions.act_window">
+        <field name="name">Medicine</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="view_id" ref="hospital_product_template_kanban_detail_view"/><field name="domain">[('medicine_ok','=',True)]</field>
+        <field name="context">{'default_medicine_ok': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Medicine
+            </p>
+        </field>
+    </record>
+    <!--    Medicine Menu-->
+    <menuitem id="product_template_menu_medicine" name="Medicine" sequence="1" parent="hospital_menu_configuration" action="product_template_action_medicine"/>
+    <!--    Vaccine Menu-->
+    <menuitem id="product_template_menu_vaccine" name="Vaccine" sequence="2" parent="hospital_menu_configuration" action="product_template_action_vaccine"/>
+</odoo>

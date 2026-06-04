@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Allow hospital managers to administer staff from Hospital Configuration. -->
+    <record id="base_hospital_management.base_hospital_management_group_manager" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('hr.group_hr_user'))]"/>
+    </record>
+</odoo>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="hospital_management_dashboard_templates" xml:space="preserve">
+    <t t-name="HospitalManagementDashboard" owl="1">
+        <div class="oh_dashboards hospital-ai-dashboard">
+            <div class="container-fluid py-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                    <div>
+                        <h2 class="mb-1">Management &amp; AI Dashboard</h2>
+                        <p class="text-muted mb-0">Operational KPIs, clinical alerts and human-approved AI governance.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" t-on-click="loadDashboard">Refresh</button>
+                        <button class="btn btn-primary" t-on-click="generateSuggestions">Generate Safe Suggestions</button>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning d-flex align-items-center justify-content-between" role="alert">
+                    <span><i class="fa fa-exclamation-triangle me-2"/> <t t-esc="state.disclaimer"/></span>
+                    <button class="btn btn-sm btn-outline-dark" t-on-click="openAI">Review AI Queue</button>
+                </div>
+
+                <t t-if="state.loading">
+                    <div class="hospital-dashboard-loading">Loading dashboard...</div>
+                </t>
+                <t t-else="">
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="hospital-kpi-card" t-on-click="openPatients">
+                                <span class="kpi-label">Patients</span>
+                                <strong><t t-esc="state.cards.patients || 0"/></strong>
+                                <small>Total active patient masters</small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="hospital-kpi-card" t-on-click="openAppointments">
+                                <span class="kpi-label">Appointments Today</span>
+                                <strong><t t-esc="state.cards.appointments_today || 0"/></strong>
+                                <small>Booked / walk-in queue</small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="hospital-kpi-card" t-on-click="openOPD">
+                                <span class="kpi-label">OPD Today</span>
+                                <strong><t t-esc="state.cards.opd_today || 0"/></strong>
+                                <small>Consultation workload</small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="hospital-kpi-card" t-on-click="openIPD">
+                                <span class="kpi-label">IPD Admitted</span>
+                                <strong><t t-esc="state.cards.ipd_admitted || 0"/></strong>
+                                <small>Current inpatient census</small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="hospital-kpi-card" t-on-click="openBeds">
+                                <span class="kpi-label">Bed Occupancy</span>
+                                <strong><t t-esc="state.cards.bed_occupancy || 0"/>%</strong>
+                                <small><t t-esc="state.cards.beds_available || 0"/> beds available</small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="hospital-kpi-card warning" t-on-click="openLab">
+                                <span class="kpi-label">Pending Lab</span>
+                                <strong><t t-esc="state.cards.lab_pending || 0"/></strong>
+                                <small>Draft / in-progress tests</small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="hospital-kpi-card warning" t-on-click="openLowStock">
+                                <span class="kpi-label">Low-stock Medicines</span>
+                                <strong><t t-esc="state.cards.pharmacy_low_stock || 0"/></strong>
+                                <small>At or below 5 units</small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="hospital-kpi-card danger" t-on-click="openEmergency">
+                                <span class="kpi-label">Active Emergency</span>
+                                <strong><t t-esc="state.cards.emergency_active || 0"/></strong>
+                                <small>Open triage / treatment cases</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12 col-lg-4">
+                            <div class="hospital-panel h-100">
+                                <h4>AI Review KPI</h4>
+                                <div class="ai-status-grid">
+                                    <div><span>Pending</span><strong><t t-esc="state.ai.pending || 0"/></strong></div>
+                                    <div><span>Accepted</span><strong><t t-esc="state.ai.accepted || 0"/></strong></div>
+                                    <div><span>Edited</span><strong><t t-esc="state.ai.edited || 0"/></strong></div>
+                                    <div><span>Rejected</span><strong><t t-esc="state.ai.rejected || 0"/></strong></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-8">
+                            <div class="hospital-panel h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <h4 class="mb-0">Latest AI / Rule Suggestions</h4>
+                                    <button class="btn btn-sm btn-outline-primary" t-on-click="openAI">Open Log</button>
+                                </div>
+                                <t t-if="!state.ai.latest || !state.ai.latest.length">
+                                    <div class="empty-state">No suggestions yet. Generate safe suggestions to populate the review queue.</div>
+                                </t>
+                                <t t-else="">
+                                    <div class="table-responsive">
+                                        <table class="table align-middle hospital-ai-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>No.</th>
+                                                    <th>Title</th>
+                                                    <th>Area</th>
+                                                    <th>Severity</th>
+                                                    <th>Status</th>
+                                                    <th>Disclaimer</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr t-foreach="state.ai.latest" t-as="item" t-key="item.id" t-on-click="openSuggestion" t-att-data-id="item.id">
+                                                    <td><t t-esc="item.name"/></td>
+                                                    <td><t t-esc="item.title"/></td>
+                                                    <td><t t-esc="item.source_area"/></td>
+                                                    <td><span class="badge text-bg-light"><t t-esc="item.severity"/></span></td>
+                                                    <td><span class="badge text-bg-secondary"><t t-esc="item.state"/></span></td>
+                                                    <td><small><t t-esc="item.disclaimer"/></small></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

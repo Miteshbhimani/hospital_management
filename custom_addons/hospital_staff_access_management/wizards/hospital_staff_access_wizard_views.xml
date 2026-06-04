@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hospital_staff_access_wizard_view_form" model="ir.ui.view">
+        <field name="name">hospital.staff.access.wizard.form</field>
+        <field name="model">hospital.staff.access.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create / Update User Access">
+                <group>
+                    <field name="employee_id" readonly="1"/>
+                    <field name="user_id" readonly="1"/>
+                    <field name="hospital_staff_role" required="1"/>
+                    <field name="login" placeholder="doctor@example.com" required="1"/>
+                    <field name="temporary_password" password="True" placeholder="Optional temporary password"/>
+                    <field name="update_existing_user"/>
+                    <field name="group_preview_ids" widget="many2many_tags" readonly="1"/>
+                </group>
+                <footer>
+                    <button name="action_confirm" type="object" string="Create / Update Access" class="btn-primary"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

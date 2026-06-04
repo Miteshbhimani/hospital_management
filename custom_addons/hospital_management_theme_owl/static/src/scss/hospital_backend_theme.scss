@@ -1,0 +1,796 @@
+// -----------------------------------------------------------------------------
+// Backend theme styles for base_hospital_management screens.
+// Scope strategy:
+//   - theme_detector.js toggles body.o_hmo_hospital_active only on hospital screens
+//   - styling is applied through safe backend assets, without database view
+//     inheritance, so installation cannot fail because of fragile/missing XML IDs
+// -----------------------------------------------------------------------------
+
+body.o_hmo_hospital_active {
+    font-family: $hmo-font;
+    background: $hmo-bg;
+
+    .o_action_manager,
+    .o_content {
+        background: radial-gradient(circle at top left, rgba($hmo-secondary, .08), transparent 32rem), $hmo-bg;
+    }
+
+    .o_control_panel {
+        border-bottom: 1px solid rgba($hmo-primary, .12);
+        background: rgba(255, 255, 255, .94);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, .04);
+    }
+
+    .breadcrumb,
+    .o_breadcrumb {
+        font-weight: 700;
+        letter-spacing: -.01em;
+        color: $hmo-text;
+    }
+
+    .btn-primary,
+    .o_form_button_save {
+        background: linear-gradient(135deg, $hmo-primary, $hmo-secondary) !important;
+        border-color: transparent !important;
+        border-radius: $hmo-radius-sm;
+        box-shadow: 0 10px 18px rgba($hmo-primary, .18);
+    }
+
+    .btn-secondary,
+    .btn-light,
+    .btn-outline-primary,
+    .o_form_button_cancel {
+        border-radius: $hmo-radius-sm;
+    }
+
+    .o_statusbar_status .o_arrow_button_current,
+    .o_statusbar_status .o_arrow_button_current.disabled {
+        background: rgba($hmo-primary, .12) !important;
+        color: $hmo-primary-dark !important;
+        font-weight: 700;
+    }
+
+    .o_notebook .nav-link {
+        border-radius: $hmo-radius-sm $hmo-radius-sm 0 0;
+        font-weight: 600;
+    }
+
+    .o_notebook .nav-link.active {
+        color: $hmo-primary-dark;
+        border-top: 3px solid $hmo-secondary;
+    }
+
+    .o_chatter,
+    .o-mail-Chatter {
+        @include hmo-card;
+        overflow: hidden;
+        width: calc(100% - 48px);
+        max-width: 1320px;
+        margin: 0 auto 1.5rem;
+    }
+
+    // Form screens: patient, OPD, IPD, lab, pharmacy, configuration, etc.
+    // v7: keep Odoo native form geometry intact; only polish spacing,
+    // cards, stat buttons, notebook tabs, and chatter alignment.
+    .o_form_view {
+        .o_form_sheet_bg {
+            background: transparent;
+        }
+
+        .o_form_sheet {
+            @include hmo-card;
+            width: calc(100% - 48px);
+            max-width: 1320px;
+            margin: 18px auto 0;
+            padding: 28px 32px !important;
+            overflow: visible;
+        }
+
+        .o_form_renderer {
+            padding-bottom: 1.25rem;
+        }
+
+        .o_form_sheet > .oe_title {
+            margin: 0 0 1.15rem;
+            padding-top: .35rem;
+            max-width: 55%;
+        }
+
+        .oe_title h1,
+        h1 {
+            color: $hmo-text;
+            font-weight: 800;
+            letter-spacing: -.025em;
+            line-height: 1.2;
+        }
+
+        .oe_title h1 {
+            font-size: 1.65rem;
+            margin-bottom: .25rem;
+        }
+
+        .oe_avatar,
+        .o_field_image.oe_avatar {
+            float: right;
+            clear: right;
+            margin: 0 0 1.25rem 1.5rem;
+            border-radius: $hmo-radius;
+        }
+
+        .o_field_image.oe_avatar > img,
+        .oe_avatar img {
+            border-radius: $hmo-radius-sm;
+            border: 1px solid rgba($hmo-primary, .14);
+            background: #fff;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, .06);
+        }
+
+        .o_group {
+            column-gap: 2rem;
+            row-gap: .65rem;
+            margin-bottom: 1rem;
+        }
+
+        .o_group .o_td_label .o_form_label,
+        .o_form_label {
+            color: $hmo-soft-text;
+            font-weight: 700;
+            letter-spacing: .01em;
+        }
+
+        .o_group .o_td_label {
+            padding-right: .85rem;
+            vertical-align: middle;
+        }
+
+        .o_group .o_field_widget {
+            min-width: 0;
+        }
+
+        .o_field_widget input,
+        .o_field_widget textarea,
+        .o_field_widget select,
+        .o_input {
+            border-radius: $hmo-radius-sm;
+            border-color: rgba($hmo-primary, .16);
+        }
+
+        .oe_button_box {
+            float: right;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            align-items: stretch;
+            gap: .5rem;
+            width: auto !important;
+            max-width: 520px;
+            margin: 0 0 1.2rem 1.5rem;
+            clear: right;
+
+            .oe_stat_button,
+            .o_stat_button {
+                margin: 0 !important;
+                min-width: 118px;
+                min-height: 48px;
+                border: 1px solid rgba($hmo-primary, .14);
+                border-radius: $hmo-radius;
+                background: linear-gradient(180deg, #fff, rgba($hmo-bg-strong, .35));
+                box-shadow: 0 6px 14px rgba(15, 23, 42, .04);
+            }
+        }
+
+        .o_form_statusbar {
+            border: 0 !important;
+            border-radius: 0;
+            overflow: visible;
+            background: transparent !important;
+            box-shadow: none !important;
+            padding: .55rem 1rem;
+        }
+
+        .o_form_statusbar .o_statusbar_buttons {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        .o_form_statusbar .o_statusbar_status {
+            margin-left: auto;
+        }
+    }
+
+    // List/tree screens.
+    .o_list_view {
+        .o_list_renderer,
+        .o_list_table {
+            border-radius: $hmo-radius-lg;
+            overflow: hidden;
+            box-shadow: $hmo-shadow-soft;
+            border: 1px solid rgba($hmo-primary, .12);
+            background: #fff;
+        }
+
+        thead th,
+        .o_list_table thead th {
+            background: rgba($hmo-bg-strong, .6) !important;
+            color: $hmo-primary-dark;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: .75rem;
+            letter-spacing: .04em;
+        }
+
+        tbody tr:hover {
+            background: rgba($hmo-secondary, .075) !important;
+        }
+
+        .badge,
+        .o_badge_cell .badge {
+            border-radius: 999px;
+            padding: .35rem .65rem;
+            font-weight: 700;
+        }
+    }
+
+    // Kanban screens.
+    .o_kanban_view {
+        &.o_kanban_ungrouped .o_kanban_renderer,
+        .o_kanban_renderer.o_kanban_ungrouped {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            align-content: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        &.o_kanban_ungrouped .o_kanban_renderer > *,
+        .o_kanban_renderer.o_kanban_ungrouped > * {
+            flex: 0 0 340px;
+            width: 340px;
+            max-width: calc(100% - .5rem);
+            min-width: 280px;
+        }
+
+        .o_kanban_renderer {
+            gap: 1rem;
+            padding: 1rem;
+            align-items: start;
+        }
+
+        .o_kanban_record,
+        .oe_kanban_card,
+        .o_kanban_quick_create {
+            width: 100%;
+            margin: 0;
+            border-radius: $hmo-radius-lg;
+            border: 1px solid rgba($hmo-primary, .12);
+            box-shadow: $hmo-shadow-soft;
+            overflow: hidden;
+            background: #fff;
+            min-height: 108px;
+        }
+
+        .o_kanban_record > div,
+        .oe_kanban_card > div {
+            max-width: 100%;
+        }
+
+        .o_kanban_record .o_kanban_record_top,
+        .o_kanban_record .o_kanban_record_title,
+        .o_kanban_record .oe_kanban_details,
+        .o_kanban_record .oe_kanban_content,
+        .oe_kanban_card .oe_kanban_details,
+        .oe_kanban_card .oe_kanban_content {
+            padding: .95rem 1rem;
+        }
+
+        .o_kanban_record .o_kanban_record_title,
+        .oe_kanban_card .o_kanban_record_title,
+        .oe_kanban_card strong,
+        .oe_kanban_card .fw-bold {
+            color: $hmo-text;
+            font-weight: 800;
+        }
+
+        .o_kanban_record img,
+        .oe_kanban_card img {
+            max-width: 72px;
+            width: auto;
+            height: auto;
+            border-radius: $hmo-radius-sm;
+        }
+
+        .o_kanban_record:hover,
+        .oe_kanban_card:hover {
+            transform: translateY(-1px);
+            box-shadow: $hmo-shadow;
+            border-color: rgba($hmo-secondary, .3);
+        }
+    }
+
+    // Search/control-panel widgets.
+    .o_searchview,
+    .o_searchview_input_container {
+        border-radius: $hmo-radius-sm;
+    }
+
+    // Calendar screens.
+    .o_calendar_view {
+        .o_calendar_renderer,
+        .fc-view-harness {
+            border-radius: $hmo-radius-lg;
+            overflow: hidden;
+            box-shadow: $hmo-shadow-soft;
+            border: 1px solid rgba($hmo-primary, .12);
+            background: #fff;
+        }
+
+        .fc-event {
+            border-radius: 999px;
+            border: 0;
+            padding: .15rem .45rem;
+        }
+    }
+}
+
+// Existing OWL dashboards from base_hospital_management.
+.hm-dashboard {
+    font-family: $hmo-font;
+    background: radial-gradient(circle at 5% 0%, rgba($hmo-secondary, .14), transparent 28rem), $hmo-bg !important;
+    color: $hmo-text;
+    min-height: calc(100vh - 72px);
+
+    .hm-hero {
+        @include hmo-gradient;
+        border-radius: $hmo-radius-lg;
+        box-shadow: $hmo-shadow;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hm-hero::after {
+        content: "";
+        position: absolute;
+        inset: auto -80px -120px auto;
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.16);
+    }
+
+    .hm-kpi-card,
+    .hm-panel,
+    .hm-mini-card,
+    .hm-table-wrap,
+    .dashboard-card,
+    .dash-card {
+        @include hmo-card;
+        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .hm-kpi-card:hover,
+    .hm-mini-card:hover {
+        transform: translateY(-2px);
+        box-shadow: $hmo-shadow;
+        border-color: rgba($hmo-secondary, .36);
+    }
+
+    .hm-panel-header h2,
+    .hm-subtitle {
+        color: $hmo-text;
+        font-weight: 800;
+        letter-spacing: -.02em;
+    }
+
+    .hm-badge,
+    .hm-token {
+        border-radius: 999px;
+        font-weight: 800;
+        letter-spacing: .02em;
+    }
+
+    .hm-table thead th {
+        color: $hmo-primary-dark;
+        background: rgba($hmo-bg-strong, .65);
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: .75rem;
+    }
+
+    .hm-action-grid button {
+        border-radius: $hmo-radius;
+        border: 1px solid rgba($hmo-primary, .14);
+        background: #fff;
+        box-shadow: 0 8px 18px rgba(15, 23, 42, .05);
+    }
+
+    .hm-action-grid button:hover {
+        border-color: rgba($hmo-secondary, .45);
+        color: $hmo-primary-dark;
+        transform: translateY(-1px);
+    }
+}
+
+.hmo-dashboard-pulse {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 1rem;
+    padding: .85rem 1rem;
+    border: 1px solid rgba($hmo-primary, .13);
+    border-radius: $hmo-radius-lg;
+    background: rgba(255,255,255,.88);
+    box-shadow: 0 8px 22px rgba(15, 23, 42, .06);
+    color: $hmo-soft-text;
+
+    .hmo-pulse-title {
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        color: $hmo-text;
+        font-weight: 800;
+    }
+
+    .hmo-pulse-dot {
+        width: .65rem;
+        height: .65rem;
+        border-radius: 50%;
+        background: $hmo-success;
+        box-shadow: 0 0 0 .35rem rgba($hmo-success, .12);
+    }
+
+    .hmo-pulse-note {
+        font-size: .86rem;
+        font-weight: 600;
+    }
+}
+
+.hmo-quick-panel {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 1050;
+    display: none;
+    font-family: $hmo-font;
+
+    body.o_hmo_hospital_active & {
+        display: block;
+    }
+
+    .hmo-quick-toggle {
+        width: 3.25rem;
+        height: 3.25rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 0;
+        color: #fff;
+        @include hmo-gradient;
+        box-shadow: 0 16px 34px rgba($hmo-primary, .28);
+        transition: transform .16s ease;
+    }
+
+    .hmo-quick-toggle:hover,
+    &.is-open .hmo-quick-toggle {
+        transform: translateY(-2px) scale(1.03);
+    }
+
+    .hmo-quick-sheet {
+        position: absolute;
+        right: 0;
+        bottom: 4rem;
+        width: 420px;
+        max-width: 92vw;
+        @include hmo-card;
+        padding: 1rem;
+        animation: hmoQuickIn .16s ease-out;
+    }
+
+    .hmo-quick-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: .8rem;
+    }
+
+    .hmo-eyebrow {
+        color: $hmo-primary-dark;
+        font-weight: 900;
+        font-size: .72rem;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    h3 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 850;
+        color: $hmo-text;
+    }
+
+    .hmo-quick-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: .65rem;
+    }
+
+    .hmo-quick-item {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        width: 100%;
+        border: 1px solid rgba($hmo-primary, .12);
+        border-radius: $hmo-radius;
+        background: linear-gradient(180deg, #fff, rgba($hmo-bg-strong, .35));
+        padding: .75rem;
+        text-align: left;
+        color: $hmo-text;
+        transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .hmo-quick-item:hover {
+        transform: translateY(-1px);
+        border-color: rgba($hmo-secondary, .55);
+        box-shadow: 0 8px 18px rgba($hmo-primary, .10);
+    }
+
+    .hmo-quick-icon {
+        width: 2.2rem;
+        height: 2.2rem;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        @include hmo-gradient;
+        flex: none;
+    }
+
+    .hmo-quick-title {
+        display: block;
+        font-weight: 800;
+        font-size: .9rem;
+    }
+
+    .hmo-quick-subtitle {
+        display: block;
+        color: $hmo-muted;
+        font-size: .76rem;
+    }
+
+    .hmo-quick-footer {
+        margin-top: .8rem;
+        padding-top: .75rem;
+        border-top: 1px dashed rgba($hmo-primary, .16);
+        color: $hmo-muted;
+        font-size: .78rem;
+    }
+
+    &.is-compact .hmo-quick-subtitle,
+    &.is-compact .hmo-quick-footer {
+        display: none;
+    }
+}
+
+.hmo-density-toggle {
+    border: 1px solid rgba($hmo-primary, .14);
+    color: $hmo-primary-dark;
+    background: #fff;
+    border-radius: 999px;
+    padding: .35rem .65rem;
+    font-weight: 800;
+    font-size: .78rem;
+}
+
+
+// Dashboard screens already provide their own action cards. Hide the floating
+// hospital quick-action panel there to avoid duplicated action affordances.
+body.o_hmo_hospital_dashboard_active .hmo-quick-panel,
+body:has(.hm-dashboard) .hmo-quick-panel,
+body:has(.hm-role-dashboard) .hmo-quick-panel,
+body:has(.hm-reception-dashboard) .hmo-quick-panel,
+body:has(.hm-doctor-dashboard) .hmo-quick-panel,
+body:has(.hm-lab-dashboard) .hmo-quick-panel,
+body:has(.hm-pharmacy-dashboard) .hmo-quick-panel,
+body:has(.hmo-dashboard-pulse) .hmo-quick-panel {
+    display: none !important;
+}
+
+@keyframes hmoQuickIn {
+    from { opacity: 0; transform: translateY(8px) scale(.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 991.98px) {
+    body.o_hmo_hospital_active {
+        .o_control_panel {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        .o_form_view .o_form_sheet {
+            width: calc(100% - 24px);
+            padding: 18px !important;
+            border-radius: $hmo-radius;
+        }
+
+        .o_form_view .o_form_sheet > .oe_title {
+            max-width: none;
+        }
+
+        .o_form_view .oe_button_box,
+        .o_form_view .oe_avatar,
+        .o_form_view .o_field_image.oe_avatar {
+            float: none;
+            clear: none;
+            margin-left: 0;
+        }
+
+        .o_chatter,
+        .o-mail-Chatter {
+            width: calc(100% - 24px);
+        }
+
+        .o_kanban_view.o_kanban_ungrouped .o_kanban_renderer,
+        .o_kanban_view .o_kanban_renderer.o_kanban_ungrouped {
+            padding: .75rem;
+        }
+
+        .o_kanban_view.o_kanban_ungrouped .o_kanban_renderer > *,
+        .o_kanban_view .o_kanban_renderer.o_kanban_ungrouped > * {
+            flex-basis: 100%;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+    }
+
+    .hm-dashboard {
+        padding: .75rem !important;
+
+        .hm-kpi-grid,
+        .hm-action-grid,
+        .hm-form-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+
+    .hmo-dashboard-pulse {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .hmo-quick-panel {
+        right: .85rem;
+        bottom: .85rem;
+
+        .hmo-quick-sheet {
+            width: 360px;
+            max-width: 94vw;
+        }
+    }
+}
+
+
+// Rich detail cards used by the hospital kanban detail views.
+body.o_hmo_hospital_active {
+    .o_hmo_detail_kanban {
+        .hmo-kanban-card {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            min-height: 128px;
+            background: #fff;
+            border-radius: $hmo-radius-lg;
+            border: 1px solid rgba($hmo-primary, .12);
+            box-shadow: $hmo-shadow-soft;
+            width: 100%;
+        }
+
+        .hmo-kanban-avatar {
+            flex: 0 0 72px;
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            overflow: hidden;
+            background: rgba($hmo-secondary, .08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        }
+
+        .hmo-kanban-icon {
+            flex: 0 0 56px;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: rgba($hmo-secondary, .12);
+            color: $hmo-secondary;
+        }
+
+        .hmo-kanban-icon-blood {
+            background: rgba(220, 53, 69, .12);
+            color: #b02a37;
+        }
+
+        .hmo-kanban-icon-security {
+            background: rgba($hmo-primary, .12);
+            color: $hmo-primary;
+        }
+
+        .hmo-kanban-body {
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .hmo-kanban-title-row,
+        .hmo-kanban-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        .hmo-kanban-title {
+            color: $hmo-text;
+            font-weight: 800;
+            line-height: 1.2;
+            overflow-wrap: anywhere;
+        }
+
+        .hmo-kanban-subtitle {
+            color: rgba($hmo-text, .68);
+            font-size: .86rem;
+            margin-top: .25rem;
+            overflow-wrap: anywhere;
+        }
+
+        .hmo-kanban-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: .35rem .75rem;
+            margin-top: .75rem;
+            font-size: .82rem;
+            color: rgba($hmo-text, .72);
+
+            span {
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
+        .hmo-kanban-footer {
+            margin-top: .8rem;
+            padding-top: .65rem;
+            border-top: 1px solid rgba($hmo-primary, .08);
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .o_hmo_detail_kanban .hmo-kanban-card {
+            flex-direction: column;
+        }
+        .o_hmo_detail_kanban .hmo-kanban-meta-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+}

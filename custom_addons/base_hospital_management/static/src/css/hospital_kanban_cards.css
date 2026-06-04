@@ -1,0 +1,55 @@
+.o_hms_detail_kanban .o_kanban_record {
+    min-width: 360px;
+}
+.o_hms_detail_kanban .o_kanban_record > div,
+.o_hms_detail_kanban .o_kanban_record .o_kanban_card_content {
+    width: 100%;
+}
+.o_hms_kanban_aside {
+    flex: 0 0 72px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+.o_hms_kanban_avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: #f3f5f8;
+    border: 1px solid #dbe4ea;
+}
+.o_hms_kanban_icon {
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff1f1;
+    font-size: 1.35rem;
+}
+.o_hms_kanban_main {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+.o_hms_kanban_meta_grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .35rem .75rem;
+}
+.o_hms_kanban_meta_grid > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+@media (max-width: 576px) {
+    .o_hms_detail_kanban .o_kanban_record {
+        min-width: 100%;
+    }
+    .o_hms_kanban_meta_grid {
+        grid-template-columns: 1fr;
+    }
+}

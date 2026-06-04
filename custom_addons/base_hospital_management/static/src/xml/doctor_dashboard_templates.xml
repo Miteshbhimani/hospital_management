@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<templates id="doc_dashboard" xml:space="preserve">
+    <t t-name="DoctorDashboard" owl="1">
+        <div class="hm-dashboard hm-role-dashboard hm-doctor-dashboard">
+            <div class="hm-hero doctor">
+                <div>
+                    <span class="hm-eyebrow">Clinical Workspace</span>
+                    <h1>Doctor Dashboard</h1>
+                    <p>Review consultation queue, start/complete appointments, record vitals and monitor clinical alerts.</p>
+                </div>
+                <div class="hm-hero-actions">
+                    <button class="btn btn-light" t-on-click="loadDashboard"><i class="fa fa-refresh me-1"/>Refresh</button>
+                    <button class="btn btn-primary" t-on-click="openVitals"><i class="fa fa-heartbeat me-1"/>Vitals / EMR</button>
+                </div>
+            </div>
+
+            <t t-if="state.loading"><div class="hm-loading">Loading doctor dashboard...</div></t>
+            <t t-else="">
+                <div class="hm-kpi-grid hm-kpi-grid-6">
+                    <div class="hm-kpi-card" t-on-click="openAppointments"><span>Appointments</span><strong><t t-esc="state.kpis.appointments_today || 0"/></strong><small>Today</small></div>
+                    <div class="hm-kpi-card warning"><span>Waiting</span><strong><t t-esc="state.kpis.waiting || 0"/></strong><small>Booked/check-in</small></div>
+                    <div class="hm-kpi-card" t-on-click="openConsultations"><span>OPD</span><strong><t t-esc="state.kpis.opd_today || 0"/></strong><small>Consultations today</small></div>
+                    <div class="hm-kpi-card" t-on-click="openInpatients"><span>IPD</span><strong><t t-esc="state.kpis.admitted || 0"/></strong><small>Admitted patients</small></div>
+                    <div class="hm-kpi-card" t-on-click="openSurgeries"><span>Surgery</span><strong><t t-esc="state.kpis.surgeries || 0"/></strong><small>Draft/confirmed</small></div>
+                    <div class="hm-kpi-card danger" t-on-click="openVitals"><span>Abnormal Vitals</span><strong><t t-esc="state.kpis.abnormal_vitals || 0"/></strong><small>Today</small></div>
+                </div>
+
+                <div class="hm-action-grid">
+                    <button t-on-click="openConsultations"><i class="fa fa-stethoscope"/>Consultations</button>
+                    <button t-on-click="openPatients"><i class="fa fa-users"/>Patients</button>
+                    <button t-on-click="openInpatients"><i class="fa fa-bed"/>Inpatients</button>
+                    <button t-on-click="openSurgeries"><i class="fa fa-medkit"/>Surgery</button>
+                    <button t-on-click="openAllocations"><i class="fa fa-calendar"/>Shift Allocation</button>
+                    <button t-on-click="openEmergency"><i class="fa fa-ambulance"/>Emergency</button>
+                </div>
+
+                <div class="hm-layout no-sidebar">
+                    <main class="hm-main-panel full">
+                        <div class="hm-tabs">
+                            <button t-att-class="{ active: state.active === 'queue' }" data-section="queue" t-on-click="setActive">Consultation Queue</button>
+                            <button t-att-class="{ active: state.active === 'vitals' }" data-section="vitals" t-on-click="setActive">Capture Vitals</button>
+                            <button t-att-class="{ active: state.active === 'alerts' }" data-section="alerts" t-on-click="setActive">Clinical Alerts</button>
+                            <button t-att-class="{ active: state.active === 'surgery' }" data-section="surgery" t-on-click="setActive">Surgery Plan</button>
+                        </div>
+
+                        <section class="hm-panel" t-if="state.active === 'queue'">
+                            <div class="hm-panel-header"><div><h2>Today's Queue</h2><p>Start consultation, mark complete or create OPD visit from appointment.</p></div><button class="btn btn-outline-primary" t-on-click="openAppointments">Open Appointments</button></div>
+                            <div class="table-responsive hm-table-wrap">
+                                <table class="table hm-table">
+                                    <thead><tr><th>Token</th><th>Appointment</th><th>Patient</th><th>Time</th><th>Priority</th><th>Status</th><th>Complaint</th><th>Actions</th></tr></thead>
+                                    <tbody>
+                                        <t t-foreach="state.queue" t-as="item" t-key="item.id">
+                                            <tr>
+                                                <td><span class="hm-token"><t t-esc="item.token_number || '-'"/></span></td>
+                                                <td><a href="#" t-att-data-id="item.id" t-on-click="openAppointment"><t t-esc="item.name"/></a></td>
+                                                <td><t t-esc="formatM2O(item.patient_id)"/></td>
+                                                <td><t t-esc="formatDate(item.appointment_date)"/></td>
+                                                <td><span t-att-class="'hm-badge ' + priorityClass(item.priority)"><t t-esc="priorityLabel(item.priority)"/></span></td>
+                                                <td><t t-esc="item.state"/></td>
+                                                <td><t t-esc="item.chief_complaint || '-'"/></td>
+                                                <td class="hm-row-actions">
+                                                    <button class="btn btn-sm btn-outline-success" t-if="item.state === 'draft' || item.state === 'scheduled'" t-att-data-id="item.id" data-method="action_check_in" t-on-click="appointmentAction">Check-in</button>
+                                                    <button class="btn btn-sm btn-outline-primary" t-if="item.state === 'checked_in'" t-att-data-id="item.id" data-method="action_start_consultation" t-on-click="appointmentAction">Start</button>
+                                                    <button class="btn btn-sm btn-outline-secondary" t-if="item.state === 'in_consultation'" t-att-data-id="item.id" data-method="action_done" t-on-click="appointmentAction">Done</button>
+                                                    <button class="btn btn-sm btn-outline-dark" t-att-data-id="item.id" t-on-click="createOPD">Create OPD</button>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <tr t-if="!state.queue.length"><td colspan="8" class="hm-empty">No appointments are currently assigned.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <section class="hm-panel" t-if="state.active === 'vitals'">
+                            <div class="hm-panel-header"><div><h2>Capture Vitals / EMR</h2><p>Record structured clinical observations and triage status.</p></div><button class="btn btn-outline-primary" t-on-click="openVitals">Vitals List</button></div>
+                            <div class="hm-form-grid">
+                                <label>Patient *<select class="form-control" data-field="patient_id" t-att-value="state.vitalsForm.patient_id" t-on-change="updateVitals"><option value="">Select Patient</option><t t-foreach="state.patients" t-as="patient" t-key="patient.id"><option t-att-value="patient.id"><t t-esc="patient.patient_seq"/> - <t t-esc="patient.name"/></option></t></select></label>
+                                <label>Temperature °C<input type="number" step="0.1" class="form-control" data-field="temperature_c" t-att-value="state.vitalsForm.temperature_c" t-on-input="updateVitals"/></label>
+                                <label>Pulse / min<input type="number" class="form-control" data-field="pulse_rate" t-att-value="state.vitalsForm.pulse_rate" t-on-input="updateVitals"/></label>
+                                <label>Respiratory Rate<input type="number" class="form-control" data-field="respiratory_rate" t-att-value="state.vitalsForm.respiratory_rate" t-on-input="updateVitals"/></label>
+                                <label>Systolic BP<input type="number" class="form-control" data-field="systolic_bp" t-att-value="state.vitalsForm.systolic_bp" t-on-input="updateVitals"/></label>
+                                <label>Diastolic BP<input type="number" class="form-control" data-field="diastolic_bp" t-att-value="state.vitalsForm.diastolic_bp" t-on-input="updateVitals"/></label>
+                                <label>SpO2 %<input type="number" class="form-control" data-field="spo2" t-att-value="state.vitalsForm.spo2" t-on-input="updateVitals"/></label>
+                                <label>Height cm<input type="number" step="0.1" class="form-control" data-field="height_cm" t-att-value="state.vitalsForm.height_cm" t-on-input="updateVitals"/></label>
+                                <label>Weight kg<input type="number" step="0.1" class="form-control" data-field="weight_kg" t-att-value="state.vitalsForm.weight_kg" t-on-input="updateVitals"/></label>
+                                <label>Pain Score<select class="form-control" data-field="pain_score" t-att-value="state.vitalsForm.pain_score" t-on-change="updateVitals"><t t-foreach="state.painScores" t-as="score" t-key="score"><option t-att-value="score"><t t-esc="score"/></option></t></select></label>
+                                <label>Triage<select class="form-control" data-field="triage_category" t-att-value="state.vitalsForm.triage_category" t-on-change="updateVitals"><option value="green">Green</option><option value="yellow">Yellow</option><option value="orange">Orange</option><option value="red">Red</option></select></label>
+                                <label class="hm-span-2">Clinical Notes<textarea class="form-control" rows="3" data-field="notes" t-att-value="state.vitalsForm.notes" t-on-input="updateVitals"/></label>
+                            </div>
+                            <div class="hm-form-actions"><button class="btn btn-primary" t-on-click="saveVitals"><i class="fa fa-save me-1"/>Save Vitals</button></div>
+                        </section>
+
+                        <section class="hm-panel" t-if="state.active === 'alerts'">
+                            <div class="hm-panel-header"><div><h2>Abnormal Vitals &amp; Triage Alerts</h2><p>Recent records flagged by structured vital thresholds.</p></div><button class="btn btn-outline-danger" t-on-click="openVitals">Open Vitals</button></div>
+                            <div class="hm-list-cards alert-list">
+                                <t t-foreach="state.vitals" t-as="vital" t-key="vital.id">
+                                    <div class="hm-mini-card danger" t-att-data-id="vital.id" t-on-click="openVital">
+                                        <strong><t t-esc="formatM2O(vital.patient_id)"/></strong>
+                                        <span><t t-esc="vital.abnormal_reason || 'Review vitals'"/></span>
+                                        <small><t t-esc="formatDate(vital.recorded_at)"/> | Triage: <t t-esc="vital.triage_category"/></small>
+                                    </div>
+                                </t>
+                                <div t-if="!state.vitals.length" class="hm-empty">No recent abnormal vital records.</div>
+                            </div>
+                        </section>
+
+                        <section class="hm-panel" t-if="state.active === 'surgery'">
+                            <div class="hm-panel-header"><div><h2>Surgery Plan</h2><p>Upcoming and open surgery workload.</p></div><button class="btn btn-outline-primary" t-on-click="openSurgeries">Open Surgeries</button></div>
+                            <div class="hm-list-cards">
+                                <t t-foreach="state.surgeries" t-as="surgery" t-key="surgery.id">
+                                    <div class="hm-mini-card" t-att-data-id="surgery.id" t-on-click="openSurgery">
+                                        <strong><t t-esc="surgery.name"/></strong>
+                                        <span><t t-esc="formatM2O(surgery.inpatient_id)"/></span>
+                                        <small><t t-esc="formatDate(surgery.planned_date)"/> | <t t-esc="surgery.state"/></small>
+                                    </div>
+                                </t>
+                                <div t-if="!state.surgeries.length" class="hm-empty">No surgery records found.</div>
+                            </div>
+                        </section>
+                    </main>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<templates id="reception_dashboard" xml:space="preserve">
+    <t t-name="ReceptionDashboard" owl="1">
+        <div class="hm-dashboard hm-role-dashboard hm-reception-dashboard">
+            <div class="hm-hero">
+                <div>
+                    <span class="hm-eyebrow">Front Desk Command Center</span>
+                    <h1>Reception Dashboard</h1>
+                    <p>Register patients, manage the appointment queue, admit IPD patients and monitor bed/room availability.</p>
+                </div>
+                <div class="hm-hero-actions">
+                    <button class="btn btn-light" t-on-click="loadDashboard"><i class="fa fa-refresh me-1"/>Refresh</button>
+                    <button class="btn btn-primary" t-on-click="openAppointments"><i class="fa fa-calendar-check-o me-1"/>Open Queue</button>
+                </div>
+            </div>
+
+            <t t-if="state.loading">
+                <div class="hm-loading">Loading reception dashboard...</div>
+            </t>
+            <t t-else="">
+                <div class="hm-kpi-grid hm-kpi-grid-9">
+                    <div class="hm-kpi-card" t-on-click="openPatients"><span>Patients</span><strong><t t-esc="state.kpis.patients || 0"/></strong><small>Active masters</small></div>
+                    <div class="hm-kpi-card"><span>New Today</span><strong><t t-esc="state.kpis.patients_today || 0"/></strong><small>Registrations</small></div>
+                    <div class="hm-kpi-card" t-on-click="openAppointments"><span>Appointments</span><strong><t t-esc="state.kpis.appointments_today || 0"/></strong><small>Today</small></div>
+                    <div class="hm-kpi-card warning"><span>Waiting Queue</span><strong><t t-esc="state.kpis.queue_waiting || 0"/></strong><small>Booked/check-in</small></div>
+                    <div class="hm-kpi-card" t-on-click="openOPD"><span>OPD</span><strong><t t-esc="state.kpis.opd_today || 0"/></strong><small>Today</small></div>
+                    <div class="hm-kpi-card" t-on-click="openIPD"><span>IPD</span><strong><t t-esc="state.kpis.ipd_admitted || 0"/></strong><small>Admitted</small></div>
+                    <div class="hm-kpi-card success"><span>Beds Free</span><strong><t t-esc="state.kpis.available_beds || 0"/></strong><small>Available</small></div>
+                    <div class="hm-kpi-card success"><span>Rooms Free</span><strong><t t-esc="state.kpis.available_rooms || 0"/></strong><small>Available</small></div>
+                    <div class="hm-kpi-card danger" t-on-click="openEmergency"><span>Emergency</span><strong><t t-esc="state.kpis.active_emergency || 0"/></strong><small>Active cases</small></div>
+                </div>
+
+                <div class="hm-layout">
+                    <aside class="hm-side-nav">
+                        <button t-att-class="{ active: state.active === 'patient' }" data-section="patient" t-on-click="setActive"><i class="fa fa-user-plus"/> Patient Registration</button>
+                        <button t-att-class="{ active: state.active === 'appointment' }" data-section="appointment" t-on-click="setActive"><i class="fa fa-calendar"/> Appointment Booking</button>
+                        <button t-att-class="{ active: state.active === 'queue' }" data-section="queue" t-on-click="setActive"><i class="fa fa-list-ol"/> Live Queue</button>
+                        <button t-att-class="{ active: state.active === 'admission' }" data-section="admission" t-on-click="setActive"><i class="fa fa-bed"/> IPD Admission</button>
+                        <button t-att-class="{ active: state.active === 'emergency' }" data-section="emergency" t-on-click="setActive"><i class="fa fa-ambulance"/> Emergency Triage</button>
+                        <button t-att-class="{ active: state.active === 'rooms' }" data-section="rooms" t-on-click="setActive"><i class="fa fa-building"/> Rooms &amp; Wards</button>
+                    </aside>
+
+                    <main class="hm-main-panel">
+                        <t t-if="state.active === 'patient'">
+                            <section class="hm-panel">
+                                <div class="hm-panel-header"><div><h2>Create Patient</h2><p>Capture the patient master data needed by OPD/IPD workflows.</p></div><button class="btn btn-outline-primary" t-on-click="openPatients">Patient List</button></div>
+                                <div class="hm-form-grid">
+                                    <label>Name *<input class="form-control" data-form="patientForm" data-field="name" t-att-value="state.patientForm.name" t-on-input="updateForm" placeholder="Patient Name"/></label>
+                                    <label>Phone *<input class="form-control" data-form="patientForm" data-field="phone" t-att-value="state.patientForm.phone" t-on-input="updateForm" placeholder="Phone Number"/></label>
+                                    <label>Email<input class="form-control" data-form="patientForm" data-field="email" t-att-value="state.patientForm.email" t-on-input="updateForm" placeholder="Email"/></label>
+                                    <label>Date of Birth<input type="date" class="form-control" data-form="patientForm" data-field="date_of_birth" t-att-value="state.patientForm.date_of_birth" t-on-input="updateForm"/></label>
+                                    <label>Blood Group<select class="form-control" data-form="patientForm" data-field="blood_group" t-att-value="state.patientForm.blood_group" t-on-change="updateForm"><option value="a">A</option><option value="b">B</option><option value="ab">AB</option><option value="o">O</option></select></label>
+                                    <label>Rh Type<select class="form-control" data-form="patientForm" data-field="rh_type" t-att-value="state.patientForm.rh_type" t-on-change="updateForm"><option value="+">+ve</option><option value="-">-ve</option></select></label>
+                                    <label>Gender<select class="form-control" data-form="patientForm" data-field="gender" t-att-value="state.patientForm.gender" t-on-change="updateForm"><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select></label>
+                                    <label>Marital Status<select class="form-control" data-form="patientForm" data-field="marital_status" t-att-value="state.patientForm.marital_status" t-on-change="updateForm"><option value="married">Married</option><option value="unmarried">Unmarried</option><option value="widow">Widow</option><option value="widower">Widower</option><option value="divorcee">Divorce</option></select></label>
+                                    <label>Photo<input type="file" class="form-control" accept="image/png,image/jpeg,image/gif" t-on-change="onPatientImageChange"/></label>
+                                </div>
+                                <div class="hm-form-actions"><button class="btn btn-primary" t-on-click="savePatient"><i class="fa fa-save me-1"/>Save Patient</button></div>
+                            </section>
+                        </t>
+
+                        <t t-if="state.active === 'appointment'">
+                            <section class="hm-panel">
+                                <div class="hm-panel-header"><div><h2>Appointment Booking</h2><p>Create walk-in, phone or portal queue records with token generation.</p></div><button class="btn btn-outline-primary" t-on-click="openAppointments">All Appointments</button></div>
+                                <div class="hm-form-grid">
+                                    <label>Patient *<select class="form-control" data-form="appointmentForm" data-field="patient_id" t-att-value="state.appointmentForm.patient_id" t-on-change="updateForm"><option value="">Select Patient</option><t t-foreach="state.patients" t-as="patient" t-key="patient.id"><option t-att-value="patient.id"><t t-esc="patient.patient_seq"/> - <t t-esc="patient.name"/></option></t></select></label>
+                                    <label>Doctor *<select class="form-control" data-form="appointmentForm" data-field="doctor_id" t-att-value="state.appointmentForm.doctor_id" t-on-change="updateForm"><option value="">Select Doctor</option><t t-foreach="state.doctors" t-as="doctor" t-key="doctor.id"><option t-att-value="doctor.id"><t t-esc="doctor.name"/></option></t></select></label>
+                                    <label>Date &amp; Time *<input type="datetime-local" class="form-control" data-form="appointmentForm" data-field="appointment_date" t-att-value="state.appointmentForm.appointment_date" t-on-input="updateForm"/></label>
+                                    <label>Source<select class="form-control" data-form="appointmentForm" data-field="source" t-att-value="state.appointmentForm.source" t-on-change="updateForm"><option value="walk_in">Walk-in</option><option value="phone">Phone</option><option value="website">Website</option><option value="online">Online</option><option value="doctor_referral">Doctor Referral</option><option value="insurance_tpa">Insurance / TPA</option><option value="corporate">Corporate Tie-up</option><option value="camp">Health Camp</option><option value="teleconsultation">Teleconsultation</option><option value="emergency">Emergency</option></select></label>
+                                    <label>Visit Type<select class="form-control" data-form="appointmentForm" data-field="visit_type" t-att-value="state.appointmentForm.visit_type" t-on-change="updateForm"><option value="new">New Visit</option><option value="follow_up">Follow-up</option><option value="review">Report Review</option><option value="teleconsultation">Teleconsultation</option><option value="emergency">Emergency</option></select></label>
+                                    <label>Priority<select class="form-control" data-form="appointmentForm" data-field="priority" t-att-value="state.appointmentForm.priority" t-on-change="updateForm"><option value="0">Normal</option><option value="1">Priority</option><option value="2">Emergency</option></select></label>
+                                    <label class="hm-span-2">Chief Complaint<textarea class="form-control" rows="3" data-form="appointmentForm" data-field="chief_complaint" t-att-value="state.appointmentForm.chief_complaint" t-on-input="updateForm" placeholder="Symptoms / reason for visit"/></label>
+                                </div>
+                                <div class="hm-form-actions"><button class="btn btn-primary" t-on-click="createAppointment"><i class="fa fa-plus me-1"/>Create Appointment</button></div>
+                            </section>
+                        </t>
+
+                        <t t-if="state.active === 'queue'">
+                            <section class="hm-panel">
+                                <div class="hm-panel-header"><div><h2>Live Appointment Queue</h2><p>Check-in patients and open their appointment records.</p></div><button class="btn btn-outline-primary" t-on-click="loadDashboard">Refresh Queue</button></div>
+                                <div class="table-responsive hm-table-wrap">
+                                    <table class="table hm-table">
+                                        <thead><tr><th>Token</th><th>Appointment</th><th>Patient</th><th>Doctor</th><th>Time</th><th>Priority</th><th>Status</th><th/></tr></thead>
+                                        <tbody>
+                                            <t t-foreach="state.appointments" t-as="app" t-key="app.id">
+                                                <tr>
+                                                    <td><span class="hm-token"><t t-esc="app.token_number || '-'"/></span></td>
+                                                    <td><a href="#" t-att-data-id="app.id" t-on-click="openAppointment"><t t-esc="app.name"/></a></td>
+                                                    <td><t t-esc="formatM2O(app.patient_id)"/></td>
+                                                    <td><t t-esc="formatM2O(app.doctor_id)"/></td>
+                                                    <td><t t-esc="formatDate(app.appointment_date)"/></td>
+                                                    <td><span t-att-class="'hm-badge ' + priorityClass(app.priority)"><t t-esc="priorityLabel(app.priority)"/></span></td>
+                                                    <td><t t-esc="app.state"/></td>
+                                                    <td><button class="btn btn-sm btn-outline-success" t-if="app.state === 'draft' || app.state === 'scheduled'" t-att-data-id="app.id" t-on-click="checkIn">Check-in</button></td>
+                                                </tr>
+                                            </t>
+                                            <tr t-if="!state.appointments.length"><td colspan="8" class="hm-empty">No queue records for today.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+                        </t>
+
+                        <t t-if="state.active === 'admission'">
+                            <section class="hm-panel">
+                                <div class="hm-panel-header"><div><h2>IPD Admission</h2><p>Admit a registered patient with attending doctor and admission type.</p></div><button class="btn btn-outline-primary" t-on-click="openIPD">All Inpatients</button></div>
+                                <div class="hm-form-grid">
+                                    <label>Patient *<select class="form-control" data-form="admissionForm" data-field="patient_id" t-att-value="state.admissionForm.patient_id" t-on-change="updateForm"><option value="">Select Patient</option><t t-foreach="state.patients" t-as="patient" t-key="patient.id"><option t-att-value="patient.id"><t t-esc="patient.patient_seq"/> - <t t-esc="patient.name"/></option></t></select></label>
+                                    <label>Attending Doctor *<select class="form-control" data-form="admissionForm" data-field="attending_doctor_id" t-att-value="state.admissionForm.attending_doctor_id" t-on-change="updateForm"><option value="">Select Doctor</option><t t-foreach="state.doctors" t-as="doctor" t-key="doctor.id"><option t-att-value="doctor.id"><t t-esc="doctor.name"/></option></t></select></label>
+                                    <label>Admission Type<select class="form-control" data-form="admissionForm" data-field="type_admission" t-att-value="state.admissionForm.type_admission" t-on-change="updateForm"><option value="routine">Routine Admission</option><option value="emergency">Emergency Admission</option></select></label>
+                                    <label class="hm-span-2">Reason of Admission<textarea class="form-control" rows="3" data-form="admissionForm" data-field="reason" t-att-value="state.admissionForm.reason" t-on-input="updateForm"/></label>
+                                </div>
+                                <div class="hm-form-actions"><button class="btn btn-primary" t-on-click="createAdmission"><i class="fa fa-bed me-1"/>Create Admission</button></div>
+                            </section>
+                        </t>
+
+                        <t t-if="state.active === 'emergency'">
+                            <section class="hm-panel">
+                                <div class="hm-panel-header"><div><h2>Emergency Triage</h2><p>Create emergency cases with triage category and medico-legal flag.</p></div><button class="btn btn-outline-danger" t-on-click="openEmergency">Emergency List</button></div>
+                                <div class="hm-form-grid">
+                                    <label>Registered Patient<select class="form-control" data-form="emergencyForm" data-field="patient_id" t-att-value="state.emergencyForm.patient_id" t-on-change="updateForm"><option value="">Unregistered / Unknown</option><t t-foreach="state.patients" t-as="patient" t-key="patient.id"><option t-att-value="patient.id"><t t-esc="patient.patient_seq"/> - <t t-esc="patient.name"/></option></t></select></label>
+                                    <label>Unregistered Patient Name<input class="form-control" data-form="emergencyForm" data-field="patient_name" t-att-value="state.emergencyForm.patient_name" t-on-input="updateForm"/></label>
+                                    <label>Triage Category<select class="form-control" data-form="emergencyForm" data-field="triage_category" t-att-value="state.emergencyForm.triage_category" t-on-change="updateForm"><option value="red">Red - Critical</option><option value="orange">Orange - Very Urgent</option><option value="yellow">Yellow - Urgent</option><option value="green">Green - Stable</option></select></label>
+                                    <label>Arrival Mode<select class="form-control" data-form="emergencyForm" data-field="arrival_mode" t-att-value="state.emergencyForm.arrival_mode" t-on-change="updateForm"><option value="walk_in">Walk-in</option><option value="ambulance">Ambulance</option><option value="referral">Referral</option><option value="police">Police</option></select></label>
+                                    <label class="hm-check"><input type="checkbox" data-form="emergencyForm" data-field="medico_legal_case" t-att-checked="state.emergencyForm.medico_legal_case" t-on-change="updateForm"/> Medico-legal case</label>
+                                    <label class="hm-span-2">Presenting Complaint *<textarea class="form-control" rows="3" data-form="emergencyForm" data-field="presenting_complaint" t-att-value="state.emergencyForm.presenting_complaint" t-on-input="updateForm"/></label>
+                                </div>
+                                <div class="hm-form-actions"><button class="btn btn-danger" t-on-click="createEmergency"><i class="fa fa-ambulance me-1"/>Create Emergency Case</button></div>
+                            </section>
+                        </t>
+
+                        <t t-if="state.active === 'rooms'">
+                            <section class="hm-panel">
+                                <div class="hm-panel-header"><div><h2>Rooms &amp; Wards</h2><p>Availability snapshot for reception and admission decisions.</p></div><div class="d-flex gap-2"><button class="btn btn-outline-primary" t-on-click="openRooms">Rooms</button><button class="btn btn-outline-primary" t-on-click="openWards">Wards</button></div></div>
+                                <div class="row g-3">
+                                    <div class="col-12 col-lg-6">
+                                        <h3 class="hm-subtitle">Rooms</h3>
+                                        <div class="hm-list-cards"><t t-foreach="state.rooms" t-as="room" t-key="room.id"><div class="hm-mini-card"><strong><t t-esc="room.name"/></strong><span><t t-esc="room.bed_type"/> / Floor <t t-esc="room.floor_no || '-'"/></span><small>Status: <t t-esc="room.state"/></small></div></t></div>
+                                    </div>
+                                    <div class="col-12 col-lg-6">
+                                        <h3 class="hm-subtitle">Wards</h3>
+                                        <div class="hm-list-cards"><t t-foreach="state.wards" t-as="ward" t-key="ward.id"><div class="hm-mini-card"><strong><t t-esc="ward.ward_no"/></strong><span>Floor <t t-esc="ward.floor_no || '-'"/></span><small>Beds: <t t-esc="ward.bed_count || 0"/></small></div></t></div>
+                                    </div>
+                                </div>
+                            </section>
+                        </t>
+                    </main>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

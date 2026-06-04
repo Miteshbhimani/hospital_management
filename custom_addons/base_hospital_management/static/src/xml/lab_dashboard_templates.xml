@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<templates id="lab_dashboard" xml:space="preserve">
+    <t t-name="LabDashboard" owl="1">
+        <div class="hm-dashboard hm-role-dashboard hm-lab-dashboard">
+            <div class="hm-hero lab">
+                <div>
+                    <span class="hm-eyebrow">Diagnostics Control Desk</span>
+                    <h1>Laboratory Dashboard</h1>
+                    <p>Confirm lab requests, monitor processing tests and review published results from one OWL workspace.</p>
+                </div>
+                <div class="hm-hero-actions">
+                    <button class="btn btn-light" t-on-click="loadDashboard"><i class="fa fa-refresh me-1"/>Refresh</button>
+                    <button class="btn btn-primary" t-on-click="openPatientTests"><i class="fa fa-flask me-1"/>All Tests</button>
+                </div>
+            </div>
+
+            <t t-if="state.loading"><div class="hm-loading">Loading laboratory dashboard...</div></t>
+            <t t-else="">
+                <div class="hm-kpi-grid hm-kpi-grid-6">
+                    <div class="hm-kpi-card warning" t-on-click="openRequests"><span>New Requests</span><strong><t t-esc="state.kpis.new_requests || 0"/></strong><small>Need confirmation</small></div>
+                    <div class="hm-kpi-card" t-on-click="openPatientTests"><span>Draft Tests</span><strong><t t-esc="state.kpis.draft_tests || 0"/></strong><small>Pending start</small></div>
+                    <div class="hm-kpi-card" t-on-click="openPatientTests"><span>Processing</span><strong><t t-esc="state.kpis.processing || 0"/></strong><small>In lab workflow</small></div>
+                    <div class="hm-kpi-card success"><span>Completed Today</span><strong><t t-esc="state.kpis.completed_today || 0"/></strong><small>Finished tests</small></div>
+                    <div class="hm-kpi-card success" t-on-click="openResults"><span>Published</span><strong><t t-esc="state.kpis.published_results || 0"/></strong><small>With attachment</small></div>
+                    <div class="hm-kpi-card" t-on-click="openCatalog"><span>Catalog</span><strong><t t-esc="state.kpis.catalog_tests || 0"/></strong><small>Lab test definitions</small></div>
+                </div>
+
+                <div class="hm-tabs">
+                    <button t-att-class="{ active: state.active === 'requests' }" data-section="requests" t-on-click="setActive">Requests</button>
+                    <button t-att-class="{ active: state.active === 'processing' }" data-section="processing" t-on-click="setActive">Processing</button>
+                    <button t-att-class="{ active: state.active === 'published' }" data-section="published" t-on-click="setActive">Published Results</button>
+                    <button t-att-class="{ active: state.active === 'preview' }" data-section="preview" t-on-click="setActive">Request Preview</button>
+                </div>
+
+                <section class="hm-panel" t-if="state.active === 'requests'">
+                    <div class="hm-panel-header"><div><h2>Incoming Lab Requests</h2><p>Preview patient/test details before creating patient lab tests.</p></div><button class="btn btn-outline-primary" t-on-click="openRequests">Open Request List</button></div>
+                    <div class="table-responsive hm-table-wrap">
+                        <table class="table hm-table">
+                            <thead><tr><th>Request</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Type</th><th>Tests</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody>
+                                <t t-foreach="state.new_requests" t-as="req" t-key="req.id">
+                                    <tr>
+                                        <td><a href="#" t-att-data-id="req.id" t-on-click="openRequest"><t t-esc="req.name"/></a></td>
+                                        <td><t t-esc="formatM2O(req.patient_id)"/></td>
+                                        <td><t t-esc="formatM2O(req.doctor_id)"/></td>
+                                        <td><t t-esc="formatDate(req.date)"/></td>
+                                        <td><t t-esc="req.patient_type"/></td>
+                                        <td><span class="hm-token"><t t-esc="formatMany(req.test_ids)"/></span></td>
+                                        <td><t t-esc="req.state"/></td>
+                                        <td class="hm-row-actions"><button class="btn btn-sm btn-outline-primary" t-att-data-id="req.id" t-on-click="previewRequest">Preview</button><button class="btn btn-sm btn-success" t-att-data-id="req.id" t-on-click="confirmRequest">Confirm</button></td>
+                                    </tr>
+                                </t>
+                                <tr t-if="!state.new_requests.length"><td colspan="8" class="hm-empty">No new lab requests.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="hm-panel" t-if="state.active === 'processing'">
+                    <div class="hm-panel-header"><div><h2>Draft / Processing Patient Tests</h2><p>Open patient lab test records for result entry, invoice or sale operations.</p></div><button class="btn btn-outline-primary" t-on-click="openPatientTests">Open Patient Tests</button></div>
+                    <div class="table-responsive hm-table-wrap">
+                        <table class="table hm-table">
+                            <thead><tr><th>Test</th><th>Patient</th><th>Type</th><th>Date</th><th>Lab</th><th>Total</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <t t-foreach="state.in_process" t-as="test" t-key="test.id">
+                                    <tr t-att-data-id="test.id" t-on-click="openPatientTest">
+                                        <td><t t-esc="formatM2O(test.test_id)"/></td>
+                                        <td><t t-esc="formatM2O(test.patient_id)"/></td>
+                                        <td><t t-esc="test.patient_type"/></td>
+                                        <td><t t-esc="formatDate(test.date)"/></td>
+                                        <td><t t-esc="formatM2O(test.lab_id)"/></td>
+                                        <td><t t-esc="test.total_price || 0"/></td>
+                                        <td><span t-att-class="'hm-badge ' + (test.state || '')"><t t-esc="test.state"/></span></td>
+                                    </tr>
+                                </t>
+                                <tr t-if="!state.in_process.length"><td colspan="7" class="hm-empty">No draft or processing lab tests.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="hm-panel" t-if="state.active === 'published'">
+                    <div class="hm-panel-header"><div><h2>Published Results</h2><p>Latest result records with uploaded attachments.</p></div><button class="btn btn-outline-primary" t-on-click="openResults">Open Results</button></div>
+                    <div class="hm-list-cards">
+                        <t t-foreach="state.published" t-as="result" t-key="result.id">
+                            <div class="hm-mini-card" t-att-data-id="result.id" t-on-click="openResult">
+                                <strong><t t-esc="formatM2O(result.patient_id)"/></strong>
+                                <span><t t-esc="formatM2O(result.test_id)"/>: <t t-esc="result.result || '-'"/></span>
+                                <small>Normal: <t t-esc="result.normal || '-'"/> <t t-esc="formatM2O(result.uom_id)"/></small>
+                            </div>
+                        </t>
+                        <div t-if="!state.published.length" class="hm-empty">No published lab results yet.</div>
+                    </div>
+                </section>
+
+                <section class="hm-panel" t-if="state.active === 'preview'">
+                    <div class="hm-panel-header"><div><h2>Request Preview</h2><p>Patient profile and ordered lab tests.</p></div><button class="btn btn-outline-primary" data-section="requests" t-on-click="setActive">Back to Requests</button></div>
+                    <t t-if="state.requestDetail">
+                        <div class="hm-profile-strip">
+                            <div><strong><t t-esc="state.requestDetail.name"/></strong><span><t t-esc="state.requestDetail.unique"/></span></div>
+                            <div><small>Doctor</small><span><t t-esc="state.requestDetail.doctor || '-'"/></span></div>
+                            <div><small>Patient Type</small><span><t t-esc="state.requestDetail.patient_type || '-'"/></span></div>
+                            <div><small>Ticket</small><span><t t-esc="state.requestDetail.ticket || '-'"/></span></div>
+                        </div>
+                        <div class="hm-list-cards mt-3">
+                            <t t-foreach="state.requestDetail.test_data" t-as="line" t-key="line.id">
+                                <div class="hm-mini-card"><strong><t t-esc="line.name"/></strong><span>Result within: <t t-esc="line.patient_lead"/></span><small>Price: <t t-esc="line.price"/></small></div>
+                            </t>
+                        </div>
+                        <div class="hm-form-actions"><button class="btn btn-success" t-att-data-id="state.requestDetail.id" t-on-click="confirmRequest"><i class="fa fa-check me-1"/>Confirm Test</button></div>
+                    </t>
+                    <div t-if="!state.requestDetail" class="hm-empty">Select a lab request to preview.</div>
+                </section>
+            </t>
+        </div>
+    </t>
+</templates>

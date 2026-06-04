@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <!--    Search Menu for Blood Bank -->
+    <record id="blood_bank_view_search" model="ir.ui.view">
+        <field name="model">blood.bank.view.search</field>
+        <field name="model">blood.bank</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="blood_type"/>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <separator/>
+                <filter name="state" string="Unavailable" domain="[('state','=','not')]"/>
+                <filter name="state" string="Available" domain="[('state','=','avail')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Date" name="date" domain="[]" context="{'group_by':'date'}"/>
+                    <filter string="Blood Type" name="blood_type" domain="[]" context="{'group_by':'blood_type'}"/>
+                    <filter string="State" name="state" domain="[]" context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Form view for Blood Bank -->
+    <record id="blood_bank_view_form" model="ir.ui.view">
+        <field name="name">blood.bank.view.form</field>
+        <field name="model">blood.bank</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button name="action_blood_available" string="Assign" class="oe_highlight" type="object" invisible="state == 'not'">
+                    </button>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="blood_type"/>
+                            <field name="assigned_patient_id" widget="selection"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Contra Indications">
+                            <field name="blood_donation_ids">
+                                <list editable="bottom">
+                                    <field name="questions"/>
+                                    <field name="is_true"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--    Blood bank tree view-->
+    <record id="blood_bank_view_tree" model="ir.ui.view">
+        <field name="name">blood.bank.view.tree</field>
+        <field name="model">blood.bank</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="blood_type"/>
+            </list>
+        </field>
+    </record>
+    <!--    Blood bank kanban view-->
+    <record id="blood_bank_view_kanban" model="ir.ui.view">
+        <field name="name">blood.bank.view.kanban</field>
+        <field name="model">blood.bank</field>
+        <field name="priority" eval="100"/>
+        <field name="arch" type="xml">
+            <kanban class="o_hms_detail_kanban o_hms_blood_bank_kanban" default_group_by="blood_type" default_order="blood_type" quick_add="False">
+    <field name="name"/>
+    <field name="partner_id"/>
+    <field name="assigned_patient_id"/>
+    <field name="blood_type"/>
+    <field name="date"/>
+    <field name="state"/>
+    <templates>
+        <t t-name="card" class="flex-row">
+            <aside class="o_hms_kanban_icon text-danger">
+                <i class="fa fa-tint" title="Blood Bank"/>
+            </aside>
+            <main class="o_hms_kanban_main ms-3">
+                <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+                    <field class="fw-bold fs-5" name="name"/>
+                    <field name="state" widget="badge" decoration-success="state == 'avail'" decoration-danger="state == 'not'"/>
+                </div>
+                <div class="text-muted small mb-2">
+                    <i class="fa fa-tint me-1" title="Blood Group"/> <field name="blood_type"/>
+                </div>
+                <div class="o_hms_kanban_meta_grid small">
+                    <span t-if="record.partner_id.raw_value"><i class="fa fa-user me-1" title="Donor"/> <field name="partner_id"/></span>
+                    <span t-if="record.assigned_patient_id.raw_value"><i class="fa fa-procedures me-1" title="Receiver"/> <field name="assigned_patient_id"/></span>
+                    <span t-if="record.date.raw_value"><i class="fa fa-calendar me-1" title="Donation Date"/> <field name="date"/></span>
+                </div>
+            </main>
+        </t>
+    </templates>
+</kanban></field>
+    </record>
+    <!--     Action of blood bank menu -->
+    <record id="blood_bank_action" model="ir.actions.act_window">
+        <field name="name">Blood bank</field>
+        <field name="res_model">blood.bank</field>
+        <field name="view_mode">kanban,list,form</field>
+    </record>
+    <!--    Blood bank menu-->
+    <menuitem id="blood_bank_menu" name="Blood Bank" parent="hospital_menu_configuration" action="blood_bank_action" sequence="7"/>
+</odoo>

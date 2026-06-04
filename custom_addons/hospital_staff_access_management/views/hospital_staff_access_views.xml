@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hospital_staff_access_view_search" model="ir.ui.view">
+        <field name="name">hospital.staff.access.hr.employee.search</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <search string="Hospital Staff">
+                <field name="name"/>
+                <field name="work_email"/>
+                <field name="job_id"/>
+                <field name="hospital_staff_role"/>
+                <filter string="Doctors" name="filter_doctor" domain="[('hospital_staff_role','=','doctor')]"/>
+                <filter string="Nurses" name="filter_nurse" domain="[('hospital_staff_role','=','nurse')]"/>
+                <filter string="Receptionists" name="filter_receptionist" domain="[('hospital_staff_role','=','receptionist')]"/>
+                <filter string="Lab Technicians" name="filter_lab" domain="[('hospital_staff_role','=','lab_technician')]"/>
+                <filter string="Pharmacists" name="filter_pharmacist" domain="[('hospital_staff_role','=','pharmacist')]"/>
+                <filter string="Managers" name="filter_manager" domain="[('hospital_staff_role','=','manager')]"/>
+                <filter string="Has User" name="filter_has_user" domain="[('user_id','!=',False)]"/>
+                <filter string="No User" name="filter_no_user" domain="[('user_id','=',False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Hospital Role" name="group_role" context="{'group_by': 'hospital_staff_role'}"/>
+                    <filter string="Job Position" name="group_job" context="{'group_by': 'job_id'}"/>
+                    <filter string="Company" name="group_company" context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="hospital_staff_access_view_list" model="ir.ui.view">
+        <field name="name">hospital.staff.access.hr.employee.list</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <list string="Hospital Staff" create="1" edit="1">
+                <field name="name"/>
+                <field name="hospital_staff_role" widget="badge"/>
+                <field name="job_id"/>
+                <field name="work_email"/>
+                <field name="mobile_phone"/>
+                <field name="user_id"/>
+                <field name="hospital_access_state" widget="badge"/>
+                <field name="hospital_last_access_sync"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hospital_staff_access_view_kanban" model="ir.ui.view">
+        <field name="name">hospital.staff.access.hr.employee.kanban</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <kanban class="o_hospital_staff_access_kanban o_hmo_detail_kanban" sample="1">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="image_128"/>
+                <field name="hospital_staff_role"/>
+                <field name="hospital_access_state"/>
+                <field name="hospital_access_group_ids"/>
+                <field name="job_id"/>
+                <field name="department_id"/>
+                <field name="work_email"/>
+                <field name="work_phone"/>
+                <field name="mobile_phone"/>
+                <field name="user_id"/>
+                <field name="company_id"/>
+                <field name="hospital_last_access_sync"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="hmo-kanban-card oe_kanban_global_click">
+                            <div class="hmo-kanban-avatar">
+                                <img alt="Staff Avatar" t-att-src="kanban_image('hr.employee', 'image_128', record.id.raw_value)"/>
+                            </div>
+                            <div class="hmo-kanban-body">
+                                <div class="hmo-kanban-title-row">
+                                    <strong class="hmo-kanban-title"><field name="name"/></strong>
+                                    <field name="hospital_staff_role" widget="badge" t-if="record.hospital_staff_role.raw_value"/>
+                                </div>
+                                <div class="hmo-kanban-subtitle" t-if="record.job_id.raw_value">
+                                    <i class="fa fa-briefcase me-1" title="Job Position"/> <field name="job_id"/>
+                                </div>
+                                <div class="hmo-kanban-meta-grid">
+                                    <span t-if="record.department_id.raw_value"><i class="fa fa-sitemap me-1" title="Department"/> <field name="department_id"/></span>
+                                    <span t-if="record.work_email.raw_value"><i class="fa fa-envelope me-1" title="Email"/> <field name="work_email"/></span>
+                                    <span t-if="record.mobile_phone.raw_value"><i class="fa fa-mobile me-1" title="Mobile"/> <field name="mobile_phone"/></span>
+                                    <span t-if="record.work_phone.raw_value"><i class="fa fa-phone me-1" title="Work Phone"/> <field name="work_phone"/></span>
+                                    <span t-if="record.user_id.raw_value"><i class="fa fa-user-check me-1" title="Linked User"/> <field name="user_id"/></span>
+                                    <span t-if="record.company_id.raw_value"><i class="fa fa-building me-1" title="Company"/> <field name="company_id"/></span>
+                                </div>
+                                <div class="hmo-kanban-footer">
+                                    <field name="hospital_access_state" widget="badge"/>
+                                    <span class="text-muted small" t-if="record.hospital_last_access_sync.raw_value">Synced: <field name="hospital_last_access_sync"/></span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="hospital_staff_access_view_form" model="ir.ui.view">
+        <field name="name">hospital.staff.access.hr.employee.form</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <form string="Hospital Staff">
+                <header>
+                    <button name="action_open_hospital_access_wizard" type="object" string="Create / Update User Access" class="btn-primary" groups="base_hospital_management.base_hospital_management_group_manager"/>
+                    <button name="action_apply_hospital_access" type="object" string="Apply Role Access" groups="base_hospital_management.base_hospital_management_group_manager" invisible="not user_id"/>
+                    <button name="action_open_related_user" type="object" string="Open User" groups="base_hospital_management.base_hospital_management_group_manager" invisible="not user_id"/>
+                </header>
+                <sheet>
+                    <field name="image_1920" widget="image" class="oe_avatar"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Staff Name" required="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Hospital Role">
+                            <field name="hospital_staff_role" required="1"/>
+                            <field name="job_id"/>
+                            <field name="department_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="User Access">
+                            <field name="user_id" readonly="1"/>
+                            <field name="hospital_access_state" widget="badge" readonly="1"/>
+                            <field name="hospital_access_group_ids" widget="many2many_tags" readonly="1"/>
+                            <field name="hospital_last_access_sync" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Contact">
+                            <group>
+                                <group>
+                                    <field name="work_email" required="1"/>
+                                    <field name="work_phone"/>
+                                    <field name="mobile_phone"/>
+                                </group>
+                                <group>
+                                    <field name="address_id"/>
+                                    <field name="work_location_id"/>
+                                    <field name="resource_calendar_id"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Doctor Details" invisible="hospital_staff_role != 'doctor'">
+                            <group>
+                                <group>
+                                    <field name="degree_ids" widget="many2many_tags"/>
+                                    <field name="specialization_ids" widget="many2many_tags"/>
+                                    <field name="consultancy_type"/>
+                                </group>
+                                <group>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="consultancy_charge"/>
+                                    <field name="time_avg" widget="float_time"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="HR Information">
+                            <group>
+                                <group>
+                                    <field name="employee_type"/>
+                                    <field name="parent_id"/>
+                                    <field name="coach_id"/>
+                                </group>
+                                <group>
+                                    <field name="certificate"/>
+                                    <field name="study_field"/>
+                                    <field name="study_school"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hospital_staff_access_all" model="ir.actions.act_window">
+        <field name="name">Staff</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="hospital_staff_access_view_search"/>
+        <field name="domain">[]</field>
+        <field name="context">{'search_default_group_role': 1}</field>
+    </record>
+
+    <record id="action_hospital_staff_access_doctors" model="ir.actions.act_window">
+        <field name="name">Doctors</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="hospital_staff_access_view_search"/>
+        <field name="domain">[('hospital_staff_role','=','doctor')]</field>
+        <field name="context">{'default_hospital_staff_role': 'doctor'}</field>
+    </record>
+
+    <record id="action_hospital_staff_access_nurses" model="ir.actions.act_window">
+        <field name="name">Nurses</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="hospital_staff_access_view_search"/>
+        <field name="domain">[('hospital_staff_role','=','nurse')]</field>
+        <field name="context">{'default_hospital_staff_role': 'nurse'}</field>
+    </record>
+
+    <record id="action_hospital_staff_access_lab" model="ir.actions.act_window">
+        <field name="name">Lab Technicians</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="hospital_staff_access_view_search"/>
+        <field name="domain">[('hospital_staff_role','=','lab_technician')]</field>
+        <field name="context">{'default_hospital_staff_role': 'lab_technician'}</field>
+    </record>
+
+    <record id="action_hospital_staff_access_pharmacists" model="ir.actions.act_window">
+        <field name="name">Pharmacists</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="hospital_staff_access_view_search"/>
+        <field name="domain">[('hospital_staff_role','=','pharmacist')]</field>
+        <field name="context">{'default_hospital_staff_role': 'pharmacist'}</field>
+    </record>
+
+    <record id="action_hospital_staff_access_receptionists" model="ir.actions.act_window">
+        <field name="name">Receptionists</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="hospital_staff_access_view_search"/>
+        <field name="domain">[('hospital_staff_role','=','receptionist')]</field>
+        <field name="context">{'default_hospital_staff_role': 'receptionist'}</field>
+    </record>
+
+    <!-- Reuse the base module's existing Configuration > Staff entry without exposing access-right menus under Configuration. -->
+    <record id="base_hospital_management.hr_employee_menu" model="ir.ui.menu">
+        <field name="name">Staff</field>
+        <field name="sequence">0</field>
+        <field name="action" eval="'ir.actions.act_window,%d' % ref('action_hospital_staff_access_all')"/>
+    </record>
+
+    <menuitem id="hospital_staff_access_menu_root"
+              name="Staff"
+              parent="base_hospital_management.hospital_menu_configuration"
+              sequence="0"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+    <menuitem id="hospital_staff_access_menu_all"
+              name="All Staff"
+              parent="hospital_staff_access_menu_root"
+              action="action_hospital_staff_access_all"
+              sequence="1"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+    <menuitem id="hospital_staff_access_menu_doctors"
+              name="Doctors"
+              parent="hospital_staff_access_menu_root"
+              action="action_hospital_staff_access_doctors"
+              sequence="2"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+    <menuitem id="hospital_staff_access_menu_nurses"
+              name="Nurses"
+              parent="hospital_staff_access_menu_root"
+              action="action_hospital_staff_access_nurses"
+              sequence="3"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+    <menuitem id="hospital_staff_access_menu_lab"
+              name="Lab Technicians"
+              parent="hospital_staff_access_menu_root"
+              action="action_hospital_staff_access_lab"
+              sequence="4"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+    <menuitem id="hospital_staff_access_menu_pharmacists"
+              name="Pharmacists"
+              parent="hospital_staff_access_menu_root"
+              action="action_hospital_staff_access_pharmacists"
+              sequence="5"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+    <menuitem id="hospital_staff_access_menu_receptionists"
+              name="Receptionists"
+              parent="hospital_staff_access_menu_root"
+              action="action_hospital_staff_access_receptionists"
+              sequence="6"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+</odoo>

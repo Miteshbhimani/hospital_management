@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="base_hospital_management_group_compliance_officer" model="res.groups">
+        <field name="name">Compliance Officer</field>
+        <field name="category_id" ref="base_hospital_management_access"/>
+    </record>
+    <record id="base_hospital_management_group_billing_executive" model="res.groups">
+        <field name="name">Billing Executive</field>
+        <field name="category_id" ref="base_hospital_management_access"/>
+    </record>
+    <record id="base_hospital_management_group_insurance_executive" model="res.groups">
+        <field name="name">Insurance / TPA Executive</field>
+        <field name="category_id" ref="base_hospital_management_access"/>
+    </record>
+</odoo>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Patient kanban: replace the very sparse base card with a compact clinical summary card. -->
+    <record id="theme_res_partner_view_kanban_details" model="ir.ui.view">
+        <field name="name">res.partner.patient.kanban.details.theme</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base_hospital_management.res_partner_view_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="replace">
+                <kanban class="o_res_partner_kanban o_hmo_detail_kanban" sample="1">
+                    <field name="id"/>
+                    <field name="display_name"/>
+                    <field name="patient_seq"/>
+                    <field name="phone"/>
+                    <field name="mobile"/>
+                    <field name="email"/>
+                    <field name="date_of_birth"/>
+                    <field name="blood_group"/>
+                    <field name="rh_type"/>
+                    <field name="gender"/>
+                    <field name="marital_status"/>
+                    <field name="is_alive"/>
+                    <field name="city"/>
+                    <field name="state_id"/>
+                    <field name="country_id"/>
+                    <field name="doctor_id"/>
+                    <field name="insurance_id"/>
+                    <templates>
+                        <t t-name="card">
+                            <div class="hmo-kanban-card oe_kanban_global_click">
+                                <div class="hmo-kanban-avatar">
+                                    <img alt="Patient Avatar" t-att-src="kanban_image('res.partner', 'avatar_128', record.id.raw_value)"/>
+                                </div>
+                                <div class="hmo-kanban-body">
+                                    <div class="hmo-kanban-title-row">
+                                        <strong class="hmo-kanban-title"><field name="display_name"/></strong>
+                                        <span class="badge text-bg-primary" t-if="record.patient_seq.raw_value"><field name="patient_seq"/></span>
+                                    </div>
+                                    <div class="hmo-kanban-subtitle" t-if="record.phone.raw_value or record.mobile.raw_value">
+                                        <i class="fa fa-phone me-1" title="Phone"/>
+                                        <field name="phone" t-if="record.phone.raw_value"/>
+                                        <field name="mobile" t-if="!record.phone.raw_value and record.mobile.raw_value"/>
+                                    </div>
+                                    <div class="hmo-kanban-meta-grid">
+                                        <span t-if="record.gender.raw_value"><i class="fa fa-venus-mars me-1" title="Gender"/> <field name="gender"/></span>
+                                        <span t-if="record.date_of_birth.raw_value"><i class="fa fa-calendar me-1" title="Date of Birth"/> <field name="date_of_birth"/></span>
+                                        <span t-if="record.blood_group.raw_value or record.rh_type.raw_value"><i class="fa fa-tint me-1" title="Blood Group"/> <field name="blood_group"/> <field name="rh_type"/></span>
+                                        <span t-if="record.marital_status.raw_value"><i class="fa fa-heart me-1" title="Marital Status"/> <field name="marital_status"/></span>
+                                        <span t-if="record.doctor_id.raw_value"><i class="fa fa-user-md me-1" title="Family Doctor"/> <field name="doctor_id"/></span>
+                                        <span t-if="record.insurance_id.raw_value"><i class="fa fa-id-card me-1" title="Insurance"/> <field name="insurance_id"/></span>
+                                    </div>
+                                    <div class="hmo-kanban-footer">
+                                        <span t-if="record.is_alive.raw_value" t-attf-class="badge #{record.is_alive.raw_value == 'alive' ? 'text-bg-success' : 'text-bg-danger'}"><field name="is_alive"/></span>
+                                        <span class="text-muted small" t-if="record.city.raw_value or record.state_id.raw_value or record.country_id.raw_value">
+                                            <i class="fa fa-map-marker me-1" title="Location"/>
+                                            <field name="city" t-if="record.city.raw_value"/> <field name="state_id" t-if="record.state_id.raw_value"/> <field name="country_id" t-if="record.country_id.raw_value"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Blood Bank kanban: preserve grouping by blood group and show donor, receiver, date and availability. -->
+    <record id="theme_blood_bank_view_kanban_details" model="ir.ui.view">
+        <field name="name">blood.bank.kanban.details.theme</field>
+        <field name="model">blood.bank</field>
+        <field name="inherit_id" ref="base_hospital_management.blood_bank_view_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="replace">
+                <kanban class="o_hmo_detail_kanban o_hmo_blood_bank_kanban" default_group_by="blood_type" default_order="blood_type" quick_add="False">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="assigned_patient_id"/>
+                    <field name="blood_type"/>
+                    <field name="date"/>
+                    <field name="state"/>
+                    <templates>
+                        <t t-name="card">
+                            <div class="hmo-kanban-card oe_kanban_global_click">
+                                <div class="hmo-kanban-icon hmo-kanban-icon-blood">
+                                    <i class="fa fa-tint" title="Blood Bank"/>
+                                </div>
+                                <div class="hmo-kanban-body">
+                                    <div class="hmo-kanban-title-row">
+                                        <strong class="hmo-kanban-title"><field name="name"/></strong>
+                                        <field name="state" widget="badge" decoration-success="state == 'avail'" decoration-danger="state == 'not'"/>
+                                    </div>
+                                    <div class="hmo-kanban-subtitle">
+                                        <i class="fa fa-tint me-1" title="Blood Group"/> <field name="blood_type"/>
+                                    </div>
+                                    <div class="hmo-kanban-meta-grid">
+                                        <span t-if="record.partner_id.raw_value"><i class="fa fa-user me-1" title="Donor"/> <field name="partner_id"/></span>
+                                        <span t-if="record.assigned_patient_id.raw_value"><i class="fa fa-procedures me-1" title="Receiver"/> <field name="assigned_patient_id"/></span>
+                                        <span t-if="record.date.raw_value"><i class="fa fa-calendar me-1" title="Donation Date"/> <field name="date"/></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </xpath>
+        </field>
+    </record>
+</odoo>

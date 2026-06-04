@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<templates id="pharmacy_dashboard" xml:space="preserve">
+    <t t-name="PharmacyDashboard" owl="1">
+        <div class="hm-dashboard hm-role-dashboard hm-pharmacy-dashboard">
+            <div class="hm-hero pharmacy">
+                <div>
+                    <span class="hm-eyebrow">Pharmacy &amp; Inventory Desk</span>
+                    <h1>Pharmacy Dashboard</h1>
+                    <p>Create patient medicine sales, monitor low stock, review recent orders and open medicine inventory.</p>
+                </div>
+                <div class="hm-hero-actions">
+                    <button class="btn btn-light" t-on-click="loadDashboard"><i class="fa fa-refresh me-1"/>Refresh</button>
+                    <button class="btn btn-primary" t-on-click="openLowStock"><i class="fa fa-warning me-1"/>Low Stock</button>
+                </div>
+            </div>
+
+            <t t-if="state.loading"><div class="hm-loading">Loading pharmacy dashboard...</div></t>
+            <t t-else="">
+                <div class="hm-kpi-grid hm-kpi-grid-6">
+                    <div class="hm-kpi-card" t-on-click="openMedicines"><span>Medicines</span><strong><t t-esc="state.kpis.medicines || 0"/></strong><small>Products</small></div>
+                    <div class="hm-kpi-card" t-on-click="openVaccines"><span>Vaccines</span><strong><t t-esc="state.kpis.vaccines || 0"/></strong><small>Products</small></div>
+                    <div class="hm-kpi-card danger" t-on-click="openLowStock"><span>Low Stock</span><strong><t t-esc="state.kpis.low_stock || 0"/></strong><small>≤ 5 units</small></div>
+                    <div class="hm-kpi-card" t-on-click="openOrders"><span>Orders Today</span><strong><t t-esc="state.kpis.orders_today || 0"/></strong><small>Sale orders</small></div>
+                    <div class="hm-kpi-card success"><span>Sales Today</span><strong><t t-esc="money(state.kpis.sales_today || 0)"/></strong><small>Confirmed value</small></div>
+                    <div class="hm-kpi-card warning" t-on-click="openOrders"><span>Pending Orders</span><strong><t t-esc="state.kpis.pending_orders || 0"/></strong><small>Draft/sent</small></div>
+                </div>
+
+                <div class="hm-tabs">
+                    <button t-att-class="{ active: state.active === 'sale' }" data-section="sale" t-on-click="setActive">Quick Sale</button>
+                    <button t-att-class="{ active: state.active === 'inventory' }" data-section="inventory" t-on-click="setActive">Medicine Inventory</button>
+                    <button t-att-class="{ active: state.active === 'low_stock' }" data-section="low_stock" t-on-click="setActive">Low Stock</button>
+                    <button t-att-class="{ active: state.active === 'orders' }" data-section="orders" t-on-click="setActive">Recent Orders</button>
+                </div>
+
+                <section class="hm-panel" t-if="state.active === 'sale'">
+                    <div class="hm-panel-header"><div><h2>Quick Medicine Sale</h2><p>Use patient master data or create a walk-in pharmacy sale.</p></div><button class="btn btn-outline-primary" t-on-click="openOrders">Open Sale Orders</button></div>
+                    <div class="hm-form-grid">
+                        <label>Existing Patient<select class="form-control" data-field="patient_id" t-att-value="state.saleForm.patient_id" t-on-change="selectPatient"><option value="">Walk-in / Search Patient</option><t t-foreach="state.patients" t-as="patient" t-key="patient.id"><option t-att-value="patient.id"><t t-esc="patient.patient_seq"/> - <t t-esc="patient.name"/></option></t></select></label>
+                        <label>Name *<input class="form-control" data-field="name" t-att-value="state.saleForm.name" t-on-input="updateForm" placeholder="Patient / Customer Name"/></label>
+                        <label>Phone<input class="form-control" data-field="phone" t-att-value="state.saleForm.phone" t-on-input="updateForm"/></label>
+                        <label>Email<input class="form-control" data-field="email" t-att-value="state.saleForm.email" t-on-input="updateForm"/></label>
+                        <label>Date of Birth<input type="date" class="form-control" data-field="dob" t-att-value="state.saleForm.dob" t-on-input="updateForm"/></label>
+                    </div>
+
+                    <div class="hm-order-lines mt-4">
+                        <div class="hm-order-header"><h3>Medicine Lines</h3><button class="btn btn-sm btn-outline-primary" t-on-click="addRow"><i class="fa fa-plus me-1"/>Add Line</button></div>
+                        <div class="table-responsive hm-table-wrap">
+                            <table class="table hm-table">
+                                <thead><tr><th>Medicine</th><th>Available</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th><th/></tr></thead>
+                                <tbody>
+                                    <t t-foreach="state.orderLines" t-as="line" t-key="line.uid">
+                                        <tr>
+                                            <td><select class="form-control" t-att-data-uid="line.uid" data-field="product" t-att-value="line.product" t-on-change="updateLine"><option value="">Select Medicine</option><t t-foreach="state.medicines" t-as="medicine" t-key="medicine.id"><option t-att-value="medicine.id"><t t-esc="medicine.name"/></option></t></select></td>
+                                            <td><span t-att-class="line.available &lt;= 5 ? 'hm-badge emergency' : 'hm-badge normal'"><t t-esc="line.available || 0"/></span></td>
+                                            <td><input type="number" min="1" class="form-control" t-att-data-uid="line.uid" data-field="qty" t-att-value="line.qty" t-on-input="updateLine"/></td>
+                                            <td><input type="number" step="0.01" class="form-control" t-att-data-uid="line.uid" data-field="price" t-att-value="line.price" t-on-input="updateLine"/></td>
+                                            <td><strong><t t-esc="money(line.sub_total || 0)"/></strong></td>
+                                            <td><button class="btn btn-sm btn-outline-danger" t-att-data-uid="line.uid" t-on-click="removeLine"><i class="fa fa-trash"/></button></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="hm-total-bar"><span>Total</span><strong><t t-esc="money(orderTotal)"/></strong></div>
+                    </div>
+                    <div class="hm-form-actions"><button class="btn btn-primary" t-on-click="createSaleOrder"><i class="fa fa-shopping-cart me-1"/>Create Sale Order</button></div>
+                </section>
+
+                <section class="hm-panel" t-if="state.active === 'inventory'">
+                    <div class="hm-panel-header"><div><h2>Medicine Inventory</h2><p>Fast searchable stock view for pharmacy products.</p></div><button class="btn btn-outline-primary" t-on-click="openMedicines">Open Medicines</button></div>
+                    <input class="form-control hm-search" placeholder="Search medicines..." t-att-value="state.search" t-on-input="updateSearch"/>
+                    <div class="hm-list-cards mt-3">
+                        <t t-foreach="filteredMedicines" t-as="medicine" t-key="medicine.id">
+                            <div class="hm-mini-card" t-att-data-id="medicine.id" t-on-click="openProduct">
+                                <strong><t t-esc="medicine.name"/></strong>
+                                <span>Stock: <t t-esc="medicine.qty_available || 0"/> | Price: <t t-esc="money(medicine.list_price || 0)"/></span>
+                                <small>Brand: <t t-esc="formatM2O(medicine.medicine_brand_id) || '-'"/></small>
+                            </div>
+                        </t>
+                        <div t-if="!filteredMedicines.length" class="hm-empty">No medicines match the search.</div>
+                    </div>
+                </section>
+
+                <section class="hm-panel" t-if="state.active === 'low_stock'">
+                    <div class="hm-panel-header"><div><h2>Low-stock Medicines</h2><p>Products at or below the dashboard reorder threshold.</p></div><button class="btn btn-outline-danger" t-on-click="openLowStock">Open Low Stock</button></div>
+                    <div class="hm-list-cards alert-list">
+                        <t t-foreach="state.low_stock" t-as="medicine" t-key="medicine.id">
+                            <div class="hm-mini-card danger" t-att-data-id="medicine.id" t-on-click="openProduct">
+                                <strong><t t-esc="medicine.name"/></strong>
+                                <span>Available: <t t-esc="medicine.qty_available || 0"/></span>
+                                <small>Price: <t t-esc="money(medicine.list_price || 0)"/> | Brand: <t t-esc="formatM2O(medicine.medicine_brand_id) || '-'"/></small>
+                            </div>
+                        </t>
+                        <div t-if="!state.low_stock.length" class="hm-empty">No low-stock medicine records.</div>
+                    </div>
+                </section>
+
+                <section class="hm-panel" t-if="state.active === 'orders'">
+                    <div class="hm-panel-header"><div><h2>Recent Pharmacy Orders</h2><p>Latest patient sale orders created through pharmacy workflow.</p></div><button class="btn btn-outline-primary" t-on-click="openOrders">Open Orders</button></div>
+                    <div class="table-responsive hm-table-wrap">
+                        <table class="table hm-table">
+                            <thead><tr><th>Order</th><th>Patient</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <t t-foreach="state.orders" t-as="order" t-key="order.id">
+                                    <tr t-att-data-id="order.id" t-on-click="openOrder">
+                                        <td><t t-esc="order.name"/></td>
+                                        <td><t t-esc="formatM2O(order.partner_id)"/></td>
+                                        <td><t t-esc="formatDate(order.date_order)"/></td>
+                                        <td><t t-esc="money(order.amount_total || 0)"/></td>
+                                        <td><span t-att-class="'hm-badge ' + (order.state || '')"><t t-esc="order.state"/></span></td>
+                                    </tr>
+                                </t>
+                                <tr t-if="!state.orders.length"><td colspan="5" class="hm-empty">No pharmacy sale orders found.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </t>
+        </div>
+    </t>
+</templates>

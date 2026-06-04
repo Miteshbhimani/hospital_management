@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hospital_access_right_view_search" model="ir.ui.view">
+        <field name="name">hospital.access.right.search</field>
+        <field name="model">hospital.access.right</field>
+        <field name="arch" type="xml">
+            <search string="Hospital Access Rights">
+                <field name="user_name"/>
+                <field name="login"/>
+                <field name="hospital_role"/>
+                <field name="group_id"/>
+                <field name="employee_id"/>
+                <filter string="Doctors" name="role_doctor" domain="[('hospital_role','=','doctor')]"/>
+                <filter string="Nurses" name="role_nurse" domain="[('hospital_role','=','nurse')]"/>
+                <filter string="Receptionists" name="role_receptionist" domain="[('hospital_role','=','receptionist')]"/>
+                <filter string="Lab Technicians" name="role_lab" domain="[('hospital_role','=','lab_technician')]"/>
+                <filter string="Pharmacists" name="role_pharmacist" domain="[('hospital_role','=','pharmacist')]"/>
+                <filter string="Hospital Managers" name="role_manager" domain="[('hospital_role','=','manager')]"/>
+                <filter string="Linked Staff" name="linked_staff" domain="[('employee_id','!=',False)]"/>
+                <filter string="No Staff Link" name="no_staff_link" domain="[('employee_id','=',False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Access Role" name="group_access_role" context="{'group_by': 'hospital_role'}"/>
+                    <filter string="User" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Company" name="group_company" context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="hospital_access_right_view_list" model="ir.ui.view">
+        <field name="name">hospital.access.right.list</field>
+        <field name="model">hospital.access.right</field>
+        <field name="arch" type="xml">
+            <list string="Hospital Access Rights" create="0" edit="0" delete="0">
+                <field name="user_name"/>
+                <field name="login"/>
+                <field name="hospital_role" widget="badge"/>
+                <field name="group_id"/>
+                <field name="employee_id"/>
+                <field name="employee_primary_role" widget="badge"/>
+                <field name="employee_job_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <button name="action_open_user" type="object" string="Open User" class="btn-link"/>
+                <button name="action_open_staff" type="object" string="Open Staff" class="btn-link" invisible="not employee_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hospital_access_right_view_kanban" model="ir.ui.view">
+        <field name="name">hospital.access.right.kanban</field>
+        <field name="model">hospital.access.right</field>
+        <field name="arch" type="xml">
+            <kanban class="o_hospital_access_right_kanban o_hmo_detail_kanban" create="0" sample="1">
+                <field name="user_name"/>
+                <field name="login"/>
+                <field name="active"/>
+                <field name="hospital_role"/>
+                <field name="group_id"/>
+                <field name="employee_id"/>
+                <field name="employee_primary_role"/>
+                <field name="employee_job_id"/>
+                <field name="company_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="hmo-kanban-card oe_kanban_global_click">
+                            <div class="hmo-kanban-icon hmo-kanban-icon-security">
+                                <i class="fa fa-shield" title="Access Right"/>
+                            </div>
+                            <div class="hmo-kanban-body">
+                                <div class="hmo-kanban-title-row">
+                                    <strong class="hmo-kanban-title"><field name="user_name"/></strong>
+                                    <field name="hospital_role" widget="badge"/>
+                                </div>
+                                <div class="hmo-kanban-subtitle"><field name="login"/></div>
+                                <div class="hmo-kanban-meta-grid">
+                                    <span><i class="fa fa-shield me-1" title="Security Group"/> <field name="group_id"/></span>
+                                    <span t-if="record.employee_id.raw_value"><i class="fa fa-id-badge me-1" title="Linked Staff"/> <field name="employee_id"/></span>
+                                    <span t-if="record.employee_job_id.raw_value"><i class="fa fa-briefcase me-1" title="Job Position"/> <field name="employee_job_id"/></span>
+                                    <span t-if="record.company_id.raw_value"><i class="fa fa-building me-1" title="Company"/> <field name="company_id"/></span>
+                                </div>
+                                <div class="hmo-kanban-footer">
+                                    <field name="employee_primary_role" widget="badge" t-if="record.employee_primary_role.raw_value"/>
+                                    <span class="badge text-bg-success" t-if="record.active.raw_value">Active</span>
+                                    <span class="badge text-bg-secondary" t-if="!record.active.raw_value">Inactive</span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="hospital_access_right_view_form" model="ir.ui.view">
+        <field name="name">hospital.access.right.form</field>
+        <field name="model">hospital.access.right</field>
+        <field name="arch" type="xml">
+            <form string="Hospital Access Right" create="0" edit="0" delete="0">
+                <header>
+                    <button name="action_open_user" type="object" string="Open User" class="btn-primary"/>
+                    <button name="action_open_staff" type="object" string="Open Staff" invisible="not employee_id"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="user_name"/>
+                        <h1><field name="user_name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="User">
+                            <field name="user_id" readonly="1"/>
+                            <field name="login" readonly="1"/>
+                            <field name="active" readonly="1"/>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Access Right">
+                            <field name="hospital_role" readonly="1" widget="badge"/>
+                            <field name="group_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Linked Staff">
+                        <field name="employee_id" readonly="1"/>
+                        <field name="employee_primary_role" readonly="1" widget="badge"/>
+                        <field name="employee_job_id" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hospital_access_right_all" model="ir.actions.act_window">
+        <field name="groups_id" eval="[(4, ref('base_hospital_management.base_hospital_management_group_manager'))]"/>
+        <field name="name">All Access Rights</field>
+        <field name="res_model">hospital.access.right</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="hospital_access_right_view_search"/>
+        <field name="domain">[]</field>
+        <field name="context">{'search_default_group_access_role': 1}</field>
+    </record>
+
+    <record id="action_hospital_access_right_doctor" model="ir.actions.act_window">
+        <field name="groups_id" eval="[(4, ref('base_hospital_management.base_hospital_management_group_manager'))]"/>
+        <field name="name">Doctor Access Rights</field>
+        <field name="res_model">hospital.access.right</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="hospital_access_right_view_search"/>
+        <field name="domain">[('hospital_role','=','doctor')]</field>
+    </record>
+
+    <record id="action_hospital_access_right_nurse" model="ir.actions.act_window">
+        <field name="groups_id" eval="[(4, ref('base_hospital_management.base_hospital_management_group_manager'))]"/>
+        <field name="name">Nurse Access Rights</field>
+        <field name="res_model">hospital.access.right</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="hospital_access_right_view_search"/>
+        <field name="domain">[('hospital_role','=','nurse')]</field>
+    </record>
+
+    <record id="action_hospital_access_right_receptionist" model="ir.actions.act_window">
+        <field name="groups_id" eval="[(4, ref('base_hospital_management.base_hospital_management_group_manager'))]"/>
+        <field name="name">Receptionist Access Rights</field>
+        <field name="res_model">hospital.access.right</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="hospital_access_right_view_search"/>
+        <field name="domain">[('hospital_role','=','receptionist')]</field>
+    </record>
+
+    <record id="action_hospital_access_right_lab" model="ir.actions.act_window">
+        <field name="groups_id" eval="[(4, ref('base_hospital_management.base_hospital_management_group_manager'))]"/>
+        <field name="name">Lab Technician Access Rights</field>
+        <field name="res_model">hospital.access.right</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="hospital_access_right_view_search"/>
+        <field name="domain">[('hospital_role','=','lab_technician')]</field>
+    </record>
+
+    <record id="action_hospital_access_right_pharmacist" model="ir.actions.act_window">
+        <field name="groups_id" eval="[(4, ref('base_hospital_management.base_hospital_management_group_manager'))]"/>
+        <field name="name">Pharmacist Access Rights</field>
+        <field name="res_model">hospital.access.right</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="hospital_access_right_view_search"/>
+        <field name="domain">[('hospital_role','=','pharmacist')]</field>
+    </record>
+
+    <record id="action_hospital_access_right_manager" model="ir.actions.act_window">
+        <field name="groups_id" eval="[(4, ref('base_hospital_management.base_hospital_management_group_manager'))]"/>
+        <field name="name">Manager Access Rights</field>
+        <field name="res_model">hospital.access.right</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="hospital_access_right_view_search"/>
+        <field name="domain">[('hospital_role','=','manager')]</field>
+    </record>
+
+    <!-- Top-level Hospital Management menu: separate from Configuration. -->
+    <menuitem id="hospital_access_right_menu_root"
+              name="Access Rights"
+              parent="base_hospital_management.hospital_menu_root"
+              sequence="95"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+    <menuitem id="hospital_access_right_menu_all"
+              name="All Access Rights"
+              parent="hospital_access_right_menu_root"
+              action="action_hospital_access_right_all"
+              sequence="1"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+    <menuitem id="hospital_access_right_menu_doctor"
+              name="Doctor Access Rights"
+              parent="hospital_access_right_menu_root"
+              action="action_hospital_access_right_doctor"
+              sequence="2"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+    <menuitem id="hospital_access_right_menu_nurse"
+              name="Nurse Access Rights"
+              parent="hospital_access_right_menu_root"
+              action="action_hospital_access_right_nurse"
+              sequence="3"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+    <menuitem id="hospital_access_right_menu_receptionist"
+              name="Receptionist Access Rights"
+              parent="hospital_access_right_menu_root"
+              action="action_hospital_access_right_receptionist"
+              sequence="4"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+    <menuitem id="hospital_access_right_menu_lab"
+              name="Lab Technician Access Rights"
+              parent="hospital_access_right_menu_root"
+              action="action_hospital_access_right_lab"
+              sequence="5"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+    <menuitem id="hospital_access_right_menu_pharmacist"
+              name="Pharmacist Access Rights"
+              parent="hospital_access_right_menu_root"
+              action="action_hospital_access_right_pharmacist"
+              sequence="6"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+    <menuitem id="hospital_access_right_menu_manager"
+              name="Manager Access Rights"
+              parent="hospital_access_right_menu_root"
+              action="action_hospital_access_right_manager"
+              sequence="7"
+              groups="base_hospital_management.base_hospital_management_group_manager"/>
+
+    <!-- Explicit menu group restriction: force all Access Rights menus to be visible only to Hospital Managers. -->
+    <record id="hospital_access_right_menu_root" model="ir.ui.menu">
+        <field name="groups_id" eval="[(6, 0, [ref('base_hospital_management.base_hospital_management_group_manager')])]"/>
+    </record>
+    <record id="hospital_access_right_menu_all" model="ir.ui.menu">
+        <field name="groups_id" eval="[(6, 0, [ref('base_hospital_management.base_hospital_management_group_manager')])]"/>
+    </record>
+    <record id="hospital_access_right_menu_doctor" model="ir.ui.menu">
+        <field name="groups_id" eval="[(6, 0, [ref('base_hospital_management.base_hospital_management_group_manager')])]"/>
+    </record>
+    <record id="hospital_access_right_menu_nurse" model="ir.ui.menu">
+        <field name="groups_id" eval="[(6, 0, [ref('base_hospital_management.base_hospital_management_group_manager')])]"/>
+    </record>
+    <record id="hospital_access_right_menu_receptionist" model="ir.ui.menu">
+        <field name="groups_id" eval="[(6, 0, [ref('base_hospital_management.base_hospital_management_group_manager')])]"/>
+    </record>
+    <record id="hospital_access_right_menu_lab" model="ir.ui.menu">
+        <field name="groups_id" eval="[(6, 0, [ref('base_hospital_management.base_hospital_management_group_manager')])]"/>
+    </record>
+    <record id="hospital_access_right_menu_pharmacist" model="ir.ui.menu">
+        <field name="groups_id" eval="[(6, 0, [ref('base_hospital_management.base_hospital_management_group_manager')])]"/>
+    </record>
+    <record id="hospital_access_right_menu_manager" model="ir.ui.menu">
+        <field name="groups_id" eval="[(6, 0, [ref('base_hospital_management.base_hospital_management_group_manager')])]"/>
+    </record>
+
+
+    <!-- Cleanup for older versions that created Access Rights below Configuration. -->
+    <function model="hospital.access.right" name="_cleanup_configuration_access_right_menus"/>
+
+</odoo>
