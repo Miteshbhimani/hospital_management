@@ -13,10 +13,10 @@
                 '     with the help of this module. This app offers a different '
                 'dashboards for \n'
                 '     different users.',
- 'author': 'Cybrosys Techno Solutions',
- 'company': 'Cybrosys Techno Solutions',
- 'maintainer': 'Cybrosys Techno Solutions',
- 'website': 'https://www.cybrosys.com',
+ 'author': 'Mitesh bhimani',
+ 'company': 'Mitesh bhimani',
+ 'maintainer': 'Mitesh bhimani',
+ 'website': 'https://miteshbhimani.netlify.app',
  'depends': ['website', 'hr', 'stock', 'sale_management'],
  'data': ['security/base_hospital_management_groups.xml',
           'security/hospital_enterprise_security.xml',
