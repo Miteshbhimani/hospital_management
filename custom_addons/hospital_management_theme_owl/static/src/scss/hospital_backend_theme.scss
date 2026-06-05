@@ -2,8 +2,8 @@
 // Backend theme styles for base_hospital_management screens.
 // Scope strategy:
 //   - theme_detector.js toggles body.o_hmo_hospital_active only on hospital screens
-//   - styling is applied through safe backend assets, without database view
-//     inheritance, so installation cannot fail because of fragile/missing XML IDs
+//   - general styling is applied through scoped backend assets
+//   - two explicitly inherited kanban views add hospital-specific detail cards
 // -----------------------------------------------------------------------------
 
 body.o_hmo_hospital_active {
@@ -73,7 +73,7 @@ body.o_hmo_hospital_active {
     // Form screens: patient, OPD, IPD, lab, pharmacy, configuration, etc.
     // v7: keep Odoo native form geometry intact; only polish spacing,
     // cards, stat buttons, notebook tabs, and chatter alignment.
-    .o_form_view {
+    .o_action_manager .o_form_view {
         .o_form_sheet_bg {
             background: transparent;
         }
@@ -126,8 +126,10 @@ body.o_hmo_hospital_active {
             box-shadow: 0 8px 18px rgba(15, 23, 42, .06);
         }
 
+        // Keep Odoo's native horizontal gutter geometry. Adding CSS column-gap
+        // to the Bootstrap/grid row makes two 50% inner groups exceed 100% and
+        // forces the right-hand group below the left-hand group.
         .o_group {
-            column-gap: 2rem;
             row-gap: .65rem;
             margin-bottom: 1rem;
         }
@@ -202,12 +204,16 @@ body.o_hmo_hospital_active {
 
     // List/tree screens.
     .o_list_view {
-        .o_list_renderer,
-        .o_list_table {
+        .o_list_renderer {
             border-radius: $hmo-radius-lg;
-            overflow: hidden;
+            overflow: auto;
             box-shadow: $hmo-shadow-soft;
             border: 1px solid rgba($hmo-primary, .12);
+            background: #fff;
+        }
+
+        .o_list_table {
+            margin-bottom: 0;
             background: #fff;
         }
 
@@ -245,8 +251,10 @@ body.o_hmo_hospital_active {
             padding: 1rem;
         }
 
-        &.o_kanban_ungrouped .o_kanban_renderer > *,
-        .o_kanban_renderer.o_kanban_ungrouped > * {
+        &.o_kanban_ungrouped .o_kanban_renderer > .o_kanban_record,
+        &.o_kanban_ungrouped .o_kanban_renderer > .o_kanban_quick_create,
+        .o_kanban_renderer.o_kanban_ungrouped > .o_kanban_record,
+        .o_kanban_renderer.o_kanban_ungrouped > .o_kanban_quick_create {
             flex: 0 0 340px;
             width: 340px;
             max-width: calc(100% - .5rem);
@@ -336,7 +344,7 @@ body.o_hmo_hospital_active {
 }
 
 // Existing OWL dashboards from base_hospital_management.
-.hm-dashboard {
+body.o_hmo_hospital_active .hm-dashboard {
     font-family: $hmo-font;
     background: radial-gradient(circle at 5% 0%, rgba($hmo-secondary, .14), transparent 28rem), $hmo-bg !important;
     color: $hmo-text;
@@ -590,14 +598,7 @@ body.o_hmo_hospital_active {
 
 // Dashboard screens already provide their own action cards. Hide the floating
 // hospital quick-action panel there to avoid duplicated action affordances.
-body.o_hmo_hospital_dashboard_active .hmo-quick-panel,
-body:has(.hm-dashboard) .hmo-quick-panel,
-body:has(.hm-role-dashboard) .hmo-quick-panel,
-body:has(.hm-reception-dashboard) .hmo-quick-panel,
-body:has(.hm-doctor-dashboard) .hmo-quick-panel,
-body:has(.hm-lab-dashboard) .hmo-quick-panel,
-body:has(.hm-pharmacy-dashboard) .hmo-quick-panel,
-body:has(.hmo-dashboard-pulse) .hmo-quick-panel {
+body.o_hmo_hospital_dashboard_active .hmo-quick-panel {
     display: none !important;
 }
 
@@ -608,25 +609,19 @@ body:has(.hmo-dashboard-pulse) .hmo-quick-panel {
 
 @media (max-width: 991.98px) {
     body.o_hmo_hospital_active {
-        .o_control_panel {
-            position: sticky;
-            top: 0;
-            z-index: 5;
-        }
-
-        .o_form_view .o_form_sheet {
+        .o_action_manager .o_form_view .o_form_sheet {
             width: calc(100% - 24px);
             padding: 18px !important;
             border-radius: $hmo-radius;
         }
 
-        .o_form_view .o_form_sheet > .oe_title {
+        .o_action_manager .o_form_view .o_form_sheet > .oe_title {
             max-width: none;
         }
 
-        .o_form_view .oe_button_box,
-        .o_form_view .oe_avatar,
-        .o_form_view .o_field_image.oe_avatar {
+        .o_action_manager .o_form_view .oe_button_box,
+        .o_action_manager .o_form_view .oe_avatar,
+        .o_action_manager .o_form_view .o_field_image.oe_avatar {
             float: none;
             clear: none;
             margin-left: 0;
@@ -642,8 +637,10 @@ body:has(.hmo-dashboard-pulse) .hmo-quick-panel {
             padding: .75rem;
         }
 
-        .o_kanban_view.o_kanban_ungrouped .o_kanban_renderer > *,
-        .o_kanban_view .o_kanban_renderer.o_kanban_ungrouped > * {
+        .o_kanban_view.o_kanban_ungrouped .o_kanban_renderer > .o_kanban_record,
+        .o_kanban_view.o_kanban_ungrouped .o_kanban_renderer > .o_kanban_quick_create,
+        .o_kanban_view .o_kanban_renderer.o_kanban_ungrouped > .o_kanban_record,
+        .o_kanban_view .o_kanban_renderer.o_kanban_ungrouped > .o_kanban_quick_create {
             flex-basis: 100%;
             width: 100%;
             max-width: 100%;
@@ -651,7 +648,7 @@ body:has(.hmo-dashboard-pulse) .hmo-quick-panel {
         }
     }
 
-    .hm-dashboard {
+    body.o_hmo_hospital_active .hm-dashboard {
         padding: .75rem !important;
 
         .hm-kpi-grid,
@@ -681,6 +678,25 @@ body:has(.hmo-dashboard-pulse) .hmo-quick-panel {
 // Rich detail cards used by the hospital kanban detail views.
 body.o_hmo_hospital_active {
     .o_hmo_detail_kanban {
+        // The Odoo kanban record is only a structural wrapper for these custom
+        // hospital cards. Keep the visual surface on .hmo-kanban-card so the
+        // wrapper does not create a second card or visible empty placeholders.
+        .o_kanban_record {
+            padding: 0 !important;
+            min-height: 0;
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 0;
+            box-shadow: none !important;
+            overflow: visible;
+        }
+
+        .o_kanban_record:hover {
+            transform: none;
+            border-color: transparent;
+            box-shadow: none !important;
+        }
+
         .hmo-kanban-card {
             display: flex;
             gap: 1rem;
@@ -691,6 +707,13 @@ body.o_hmo_hospital_active {
             border: 1px solid rgba($hmo-primary, .12);
             box-shadow: $hmo-shadow-soft;
             width: 100%;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+
+        .hmo-kanban-card:hover {
+            transform: translateY(-1px);
+            box-shadow: $hmo-shadow;
+            border-color: rgba($hmo-secondary, .3);
         }
 
         .hmo-kanban-avatar {
@@ -703,6 +726,16 @@ body.o_hmo_hospital_active {
             display: flex;
             align-items: center;
             justify-content: center;
+
+            .hmo-kanban-avatar-image,
+            .o_field_widget,
+            .o_field_image {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
 
             img {
                 width: 100%;
@@ -791,6 +824,42 @@ body.o_hmo_hospital_active {
         }
         .o_hmo_detail_kanban .hmo-kanban-meta-grid {
             grid-template-columns: 1fr;
+        }
+    }
+}
+
+
+// Staff kanban avatar stabilization. Odoo's standard HR employee kanban renders
+// a compact linked-user avatar beside the activity icon. The broad theme image
+// rule above changed that widget image to width/height:auto, making it expand to
+// a large second staff image. Restore native inline-avatar geometry and hide the
+// redundant linked-user avatar only on hospital Staff cards while preserving the
+// activity control, presence indicator, and employee profile image.
+body.o_hmo_hospital_active {
+    .o_kanban_view {
+        .o_kanban_record .o_m2o_avatar,
+        .oe_kanban_card .o_m2o_avatar {
+            flex: 0 0 auto;
+            overflow: hidden;
+        }
+
+        .o_kanban_record .o_m2o_avatar img,
+        .oe_kanban_card .o_m2o_avatar img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+    }
+
+    // On the hospital Staff screen, the employee image already identifies the
+    // record. Keep the activity icon but remove the visually duplicated linked
+    // user avatar from the standard HR kanban footer.
+    .o_hr_employee_kanban {
+        .o_kanban_record footer .o_field_many2one_avatar_user {
+            display: none !important;
         }
     }
 }

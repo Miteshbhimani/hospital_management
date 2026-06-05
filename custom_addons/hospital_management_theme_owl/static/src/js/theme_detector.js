@@ -57,8 +57,8 @@ function hashLooksLikeHospitalPatientScreen() {
 }
 
 function navbarLooksHospital() {
-    const brand = document.querySelector(".o_menu_brand, .o_navbar .o_menu_sections");
-    return Boolean(brand && /hospital|patient|clinic/i.test(brand.textContent || ""));
+    const navigationNodes = document.querySelectorAll(".o_menu_brand, .o_navbar .o_menu_sections");
+    return [...navigationNodes].some((node) => /hospital|patient|clinic/i.test(node.textContent || ""));
 }
 
 function domContainsHospitalScreen() {
@@ -94,10 +94,25 @@ function updateHospitalThemeState() {
     document.body.classList.toggle("o_hmo_hospital_dashboard_active", Boolean(dashboardActive));
 }
 
-whenReady(() => {
-    updateHospitalThemeState();
-    window.addEventListener("hashchange", updateHospitalThemeState);
+let scheduledFrame = 0;
 
-    const observer = new MutationObserver(updateHospitalThemeState);
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "name"] });
+function scheduleHospitalThemeStateUpdate() {
+    if (scheduledFrame) {
+        return;
+    }
+    scheduledFrame = window.requestAnimationFrame(() => {
+        scheduledFrame = 0;
+        updateHospitalThemeState();
+    });
+}
+
+whenReady(() => {
+    scheduleHospitalThemeStateUpdate();
+    window.addEventListener("hashchange", scheduleHospitalThemeStateUpdate);
+
+    // Odoo view transitions replace DOM nodes. Watching child-list changes is
+    // sufficient and avoids re-running full-screen selectors for every class
+    // mutation produced by rendering and animations.
+    const observer = new MutationObserver(scheduleHospitalThemeStateUpdate);
+    observer.observe(document.body, { childList: true, subtree: true });
 });

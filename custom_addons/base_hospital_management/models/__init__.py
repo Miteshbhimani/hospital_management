@@ -64,3 +64,4 @@ from . import hospital_consent
 from . import hospital_emergency
 
 from . import hospital_dashboard_service
+from . import ir_qweb

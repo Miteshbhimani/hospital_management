@@ -7,8 +7,9 @@
         <field name="inherit_id" ref="base_hospital_management.res_partner_view_kanban"/>
         <field name="arch" type="xml">
             <xpath expr="//kanban" position="replace">
-                <kanban class="o_res_partner_kanban o_hmo_detail_kanban" sample="1">
+                <kanban class="o_res_partner_kanban o_hmo_detail_kanban" quick_create="false">
                     <field name="id"/>
+                    <field name="avatar_128"/>
                     <field name="display_name"/>
                     <field name="patient_seq"/>
                     <field name="phone"/>
@@ -29,7 +30,7 @@
                         <t t-name="card">
                             <div class="hmo-kanban-card oe_kanban_global_click">
                                 <div class="hmo-kanban-avatar">
-                                    <img alt="Patient Avatar" t-att-src="kanban_image('res.partner', 'avatar_128', record.id.raw_value)"/>
+                                    <field name="avatar_128" widget="image" class="hmo-kanban-avatar-image"/>
                                 </div>
                                 <div class="hmo-kanban-body">
                                     <div class="hmo-kanban-title-row">
@@ -72,7 +73,7 @@
         <field name="inherit_id" ref="base_hospital_management.blood_bank_view_kanban"/>
         <field name="arch" type="xml">
             <xpath expr="//kanban" position="replace">
-                <kanban class="o_hmo_detail_kanban o_hmo_blood_bank_kanban" default_group_by="blood_type" default_order="blood_type" quick_add="False">
+                <kanban class="o_hmo_detail_kanban o_hmo_blood_bank_kanban" default_group_by="blood_type" default_order="blood_type" quick_create="false">
                     <field name="name"/>
                     <field name="partner_id"/>
                     <field name="assigned_patient_id"/>
@@ -95,7 +96,7 @@
                                     </div>
                                     <div class="hmo-kanban-meta-grid">
                                         <span t-if="record.partner_id.raw_value"><i class="fa fa-user me-1" title="Donor"/> <field name="partner_id"/></span>
-                                        <span t-if="record.assigned_patient_id.raw_value"><i class="fa fa-procedures me-1" title="Receiver"/> <field name="assigned_patient_id"/></span>
+                                        <span t-if="record.assigned_patient_id.raw_value"><i class="fa fa-user me-1" title="Receiver"/> <field name="assigned_patient_id"/></span>
                                         <span t-if="record.date.raw_value"><i class="fa fa-calendar me-1" title="Donation Date"/> <field name="date"/></span>
                                     </div>
                                 </div>

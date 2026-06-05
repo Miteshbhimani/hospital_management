@@ -3,9 +3,9 @@
 
 #patient_form,
 #booking_form,
-.o_portal_wrap:has(#my_prescriptions),
-.o_portal_wrap:has(.portal_my_tests),
-.o_portal_wrap:has(.portal_my_vaccines) {
+.o_portal_wrap #my_prescriptions,
+.o_portal_wrap .portal_my_tests,
+.o_portal_wrap .portal_my_vaccines {
     font-family: Inter, "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 

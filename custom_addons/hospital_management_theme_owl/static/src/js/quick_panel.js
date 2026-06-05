@@ -4,6 +4,22 @@ import { Component, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 
+function getCompactPreference() {
+    try {
+        return window.localStorage.getItem("hmo_quick_panel_compact") === "1";
+    } catch (_error) {
+        return false;
+    }
+}
+
+function storeCompactPreference(compact) {
+    try {
+        window.localStorage.setItem("hmo_quick_panel_compact", compact ? "1" : "0");
+    } catch (_error) {
+        // Storage can be unavailable in restricted/privacy browser contexts.
+    }
+}
+
 export class HospitalThemeActionCard extends Component {
     static template = "hospital_management_theme_owl.ActionCard";
     static props = {
@@ -28,7 +44,7 @@ export class HospitalThemeQuickPanel extends Component {
         this.notification = useService("notification");
         this.state = useState({
             open: false,
-            compact: window.localStorage.getItem("hmo_quick_panel_compact") === "1",
+            compact: getCompactPreference(),
         });
         this.quickActions = [
             { title: "Patients", subtitle: "Registration and EMR", icon: "fa fa-users", tone: "primary", action: "base_hospital_management.res_partner_action" },
@@ -48,15 +64,14 @@ export class HospitalThemeQuickPanel extends Component {
 
     toggleCompact() {
         this.state.compact = !this.state.compact;
-        window.localStorage.setItem("hmo_quick_panel_compact", this.state.compact ? "1" : "0");
+        storeCompactPreference(this.state.compact);
     }
 
     async openQuickAction(item) {
         try {
             await this.action.doAction(item.action);
             this.state.open = false;
-        } catch (error) {
-            console.warn("Hospital theme quick action failed", item.action, error);
+        } catch (_error) {
             this.notification.add(`Could not open ${item.title}. Check access rights or whether the base action exists.`, {
                 type: "warning",
             });

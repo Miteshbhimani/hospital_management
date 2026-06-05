@@ -2,7 +2,7 @@
 {
     "name": "Hospital Management Theme OWL",
     "summary": "Modern OWL/SCSS UI theme extension for Base Hospital Management",
-    "version": "18.0.1.0.11",
+    "version": "18.0.1.0.15",
     "category": "Services/Healthcare",
     "author": "Custom Development",
     "website": "https://www.odoo.com",
@@ -11,10 +11,10 @@
         "web",
         "base_hospital_management",
     ],
-    # No database view inheritance is loaded. The base module has unstable/missing
-    # view XML IDs in some installations; this theme is therefore applied safely
-    # through backend/frontend assets only.
+    # General styling and OWL behavior are asset-based. Database inheritance is
+    # intentionally limited to one patient-form layout and two hospital kanbans.
     "data": [
+        "views/hospital_form_layout_views.xml",
         "views/hospital_kanban_detail_views.xml",
     ],
     "assets": {

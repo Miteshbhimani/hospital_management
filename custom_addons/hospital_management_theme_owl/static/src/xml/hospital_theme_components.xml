@@ -17,13 +17,13 @@
             <button type="button" class="hmo-quick-toggle" title="Hospital quick actions" aria-label="Hospital quick actions" t-on-click="toggleOpen">
                 <i class="fa fa-hospital-o"/>
             </button>
-            <div class="hmo-quick-sheet" t-if="state.open">
+            <div class="hmo-quick-sheet" t-if="state.open" role="region" aria-label="Hospital quick actions">
                 <div class="hmo-quick-head">
                     <div>
                         <div class="hmo-eyebrow">Hospital Workspace</div>
                         <h3>Quick actions</h3>
                     </div>
-                    <button type="button" class="hmo-density-toggle" t-on-click="toggleCompact">
+                    <button type="button" class="hmo-density-toggle" title="Toggle quick-action density" aria-label="Toggle quick-action density" t-on-click="toggleCompact">
                         <t t-if="state.compact">Comfort</t><t t-else="">Compact</t>
                     </button>
                 </div>

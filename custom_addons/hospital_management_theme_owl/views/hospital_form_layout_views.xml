@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Patient enterprise-profile layout stabilization.
+
+        The base view already places Acquisition/Identity and Emergency Contact
+        in two inner groups. The theme keeps that native two-column geometry and
+        only restructures the standalone Clinical Summary group into two inner
+        groups so the available right-hand form space is used on desktop.
+    -->
+    <record id="theme_res_partner_enterprise_profile_form_layout" model="ir.ui.view">
+        <field name="name">res.partner.enterprise.profile.form.layout.theme</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base_hospital_management.res_partner_enterprise_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='enterprise_profile']/group[field[@name='allergy_note']]" position="replace">
+                <group string="Clinical Summary">
+                    <group>
+                        <field name="allergy_note" placeholder="Drug, food, environmental allergies..."/>
+                        <field name="medical_history_note" placeholder="Problem list, diagnosis history, procedure history..."/>
+                        <field name="family_history_note"/>
+                    </group>
+                    <group>
+                        <field name="current_medication_note"/>
+                        <field name="risk_alert_note"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

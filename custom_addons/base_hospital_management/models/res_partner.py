@@ -22,6 +22,7 @@
 import math
 import re
 import base64
+from io import BytesIO
 from datetime import date
 from barcode import EAN13
 from barcode.writer import ImageWriter
@@ -406,55 +407,81 @@ class ResPartner(models.Model):
             return ean[:-1] + str(self.ean_checksum(ean))
 
     def action_generate_patient_card(self):
-        """Method for generating the patient card"""
-        current_age = 0
-        gender_caps = ''
-        blood_caps = ''
+        """Generate a print-ready, double-sided patient identification card."""
+        self.ensure_one()
+
+        # Generate the barcode fully in memory. This avoids shared temporary
+        # files and also restores a missing barcode image for older patients.
+        barcode_number = self.barcode or self.sudo().generate_ean(str(self.id))
+        values_to_write = {}
         if not self.barcode:
-            ean = self.sudo().generate_ean(str(self.id))
-            self.sudo().write({'barcode': ean})
-            number = self.barcode
-            my_code = EAN13(number, writer=ImageWriter())
-            my_code.save("code")
-            with open('code.png', 'rb') as f:
-                self.sudo().write({
-                    'barcode_png': base64.b64encode(f.read())
-                })
-        if self.gender:
-            gender_caps = self.gender.capitalize()
-        if self.blood_group:
-            blood_caps = self.blood_group.capitalize()
+            values_to_write['barcode'] = barcode_number
+        if not self.barcode_png:
+            barcode_buffer = BytesIO()
+            EAN13(barcode_number, writer=ImageWriter()).write(
+                barcode_buffer,
+                options={
+                    'module_width': 0.22,
+                    'module_height': 8.0,
+                    'quiet_zone': 1.0,
+                    'font_size': 7,
+                    'text_distance': 1.0,
+                },
+            )
+            values_to_write['barcode_png'] = base64.b64encode(
+                barcode_buffer.getvalue()
+            )
+        if values_to_write:
+            self.sudo().write(values_to_write)
+
+        current_age = 0
         if self.date_of_birth:
-            today = date.today()
-            dob = self.date_of_birth
-            current_age = relativedelta(today, dob).years
-        company = self.env['res.company'].sudo().search(
-            [('id', '=', self.env.context['allowed_company_ids'])])
+            current_age = relativedelta(date.today(), self.date_of_birth).years
+
+        gender_label = dict(self._fields['gender'].selection).get(
+            self.gender, ''
+        )
+        blood_label = dict(self._fields['blood_group'].selection).get(
+            self.blood_group, ''
+        )
+        rh_label = self.rh_type or ''
+        blood_display = f'{blood_label}{rh_label}' if blood_label else ''
+
+        name_parts = [part for part in (self.name or '').split() if part]
+        patient_initials = ''.join(part[0].upper() for part in name_parts[:2])
+        company = self.env.company.sudo()
+
         data = {
-            'name': self.name,
-            'code': self.patient_seq,
+            'name': self.name or '',
+            'code': self.patient_seq or '',
             'age': current_age,
-            'gender': gender_caps,
+            'gender': gender_label,
             'dob': self.date_of_birth,
-            'blood': blood_caps + str(self.rh_type),
-            'street': self.street,
-            'street2': self.street2,
-            'state': self.state_id.name,
-            'country': self.country_id.name,
-            'city': self.city,
-            'phone': self.phone,
-            'image': self.sudo().read(['image_1920'])[0],
-            'barcode': self.sudo().read(['barcode_png'])[0],
-            'company_name': company.name,
-            'company_street': company.street,
-            'company_street2': company.street2,
-            'company_city': company.city,
-            'company_state': company.state_id.name,
-            'company_zip': company.zip,
+            'blood': blood_display,
+            'street': self.street or '',
+            'street2': self.street2 or '',
+            'state': self.state_id.name or '',
+            'country': self.country_id.name or '',
+            'city': self.city or '',
+            'zip': self.zip or '',
+            'phone': self.phone or '',
+            'email': self.email or '',
+            'patient_image': self.image_1920,
+            'patient_initials': patient_initials or 'P',
+            'barcode_image': self.barcode_png,
+            'barcode_number': self.barcode or barcode_number,
+            'company_name': company.name or '',
+            'company_street': company.street or '',
+            'company_street2': company.street2 or '',
+            'company_city': company.city or '',
+            'company_state': company.state_id.name or '',
+            'company_zip': company.zip or '',
+            'company_phone': company.phone or '',
+            'company_email': company.email or '',
         }
         return self.env.ref(
             'base_hospital_management.action_report_patient_card'
-        ).report_action(None, data=data)
+        ).report_action(self, data=data)
 
     @api.model
     def reception_op_barcode(self, kw):

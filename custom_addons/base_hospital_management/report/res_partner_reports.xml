@@ -69,23 +69,24 @@
             </t>
         </t>
     </template>
-         <!--Report paper format-->
+    <!-- Patient-card paper format: standard CR80 / ID-1 card size. -->
     <record id="paperformat_patient" model="report.paperformat">
-        <field name="name">Custom Paper</field>
-        <field name="default" eval="True"/>
+        <field name="name">Patient Card - 86 x 54 mm</field>
+        <field name="default" eval="False"/>
         <field name="format">custom</field>
-        <field name="page_height">55</field>
-        <field name="page_width">30</field>
+        <field name="page_height">86</field>
+        <field name="page_width">54</field>
         <field name="orientation">Landscape</field>
-        <field name="margin_top">1.00</field>
-        <field name="margin_bottom">1.00</field>
-        <field name="margin_left">0.00</field>
-        <field name="margin_right">1.00</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
         <field name="header_line" eval="False"/>
-        <field name="header_spacing">35</field>
-        <field name="dpi">125</field>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
     </record>
-    <!--        Patient card report action-->
+
+    <!-- Patient card report action -->
     <record id="action_report_patient_card" model="ir.actions.report">
         <field name="name">Patient Card</field>
         <field name="model">res.partner</field>
@@ -93,116 +94,425 @@
         <field name="report_name">base_hospital_management.patient_card_report</field>
         <field name="report_file">base_hospital_management.patient_card_report</field>
         <field name="binding_model_id" ref="model_res_partner"/>
-        <field name="paperformat_id"
-               ref="base_hospital_management.paperformat_patient"/>
+        <field name="paperformat_id" ref="base_hospital_management.paperformat_patient"/>
         <field name="binding_type">report</field>
+        <field name="print_report_name">'Patient Card - %s' % (object.name or '')</field>
     </record>
-    <!--    Patient card template-->
+
+    <!-- Print-ready double-sided patient card. Tables are intentionally used
+         instead of flex/grid for wkhtmltopdf compatibility. -->
     <template id="patient_card_report">
         <t t-call="web.html_container">
-            <section>
-                <div style="width: 500px; height: 260px; border: 2px black solid;
-            border-radius: 5px;">
-                    <div class="container"
-                         style="width: 500px; height: 50px; background-color:red">
-                        <span>
-                            <i class="fa fa-wave-pulse" style="color:black;"/>
-                        </span>
-                        <h1 style="margin-left: 150px; padding-top: 10px; color:white; border-radius: 10px;">
-                            Patient Card
-                        </h1>
-                        <div class="page">
-                            <h1 style="margin-left: 15px;">
-                                <t t-esc="name"/>
-                                <br/>
-                                <label style="font-size: 18px;">
-                                    <b>Code :
-                                        <t t-esc="code"/>
-                                    </b>
-                                </label>
-                            </h1>
-                            <p style="margin-left: 15px;">
-                                <label>
-                                    <b>Gender :</b>
-                                    <t t-esc="gender"/>
-                                </label>
-                                <br/>
-                                <label>
-                                    <b>Age :</b>
-                                    <t t-esc="age"/>
-                                </label>
-                                <br/>
-                                <label>
-                                    <b>DOB :</b>
-                                    <t t-esc="dob"/>
-                                </label>
-                                <br/>
-                                <label>
-                                    <b>Blood Group :</b>
-                                    <t t-esc="blood"/>
-                                    <br/>
-                                </label>
-                                <label>
-                                    <b>Phone :</b>
-                                    <t t-esc="phone"/>
-                                </label>
-                                <br/>
-                                <label style="position:absolute; left:350px; top:100px;">
-                                    <img t-attf-src="data:image/png;base64,{{image['image_1920']}}"
-                                         style="max-height: 130px; max-width: 130px;"/>
-                                </label>
-                                <br/>
-                            </p>
-                        </div>
-                    </div>
+            <style type="text/css">
+                * {
+                    box-sizing: border-box;
+                }
+                body {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    font-family: Arial, Helvetica, sans-serif;
+                    color: #172033;
+                    background: #ffffff;
+                }
+                .patient-card-page {
+                    width: 86mm;
+                    height: 54mm;
+                    margin: 0;
+                    padding: 0.6mm;
+                    page-break-after: always;
+                    overflow: hidden;
+                    background: #ffffff;
+                }
+                .patient-card-page:last-child {
+                    page-break-after: auto;
+                }
+                .patient-card-shell {
+                    position: relative;
+                    width: 84.8mm;
+                    height: 52.8mm;
+                    overflow: hidden;
+                    border: 0.35mm solid #172033;
+                    border-radius: 2.4mm;
+                    background: #ffffff;
+                }
+                .patient-card-accent {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    width: 4mm;
+                    height: 52.8mm;
+                    background: #c92a2a;
+                }
+                .patient-card-header {
+                    width: 100%;
+                    height: 9mm;
+                    padding: 1.7mm 5.5mm 1.3mm 3.5mm;
+                    background: #c92a2a;
+                    color: #ffffff;
+                    border-collapse: collapse;
+                }
+                .patient-card-header td {
+                    padding: 0;
+                    vertical-align: middle;
+                }
+                .patient-card-title {
+                    font-size: 12pt;
+                    line-height: 1;
+                    font-weight: 700;
+                    letter-spacing: 0.2mm;
+                }
+                .patient-card-code-label {
+                    font-size: 5.5pt;
+                    line-height: 1.1;
+                    text-align: right;
+                    text-transform: uppercase;
+                    opacity: 0.92;
+                }
+                .patient-card-code {
+                    display: block;
+                    margin-top: 0.5mm;
+                    font-size: 8pt;
+                    line-height: 1;
+                    font-weight: 700;
+                    letter-spacing: 0.15mm;
+                }
+                .patient-card-body {
+                    width: 100%;
+                    height: 37.5mm;
+                    border-collapse: collapse;
+                    table-layout: fixed;
+                }
+                .patient-card-body td {
+                    padding: 0;
+                    vertical-align: top;
+                }
+                .patient-card-details {
+                    width: 60mm;
+                    padding: 3mm 2.5mm 1.5mm 3.5mm !important;
+                }
+                .patient-card-photo-cell {
+                    width: 24mm;
+                    padding: 3mm 5.5mm 1.5mm 0 !important;
+                    text-align: center;
+                }
+                .patient-card-name {
+                    max-width: 54mm;
+                    margin-bottom: 2.2mm;
+                    overflow: hidden;
+                    color: #172033;
+                    font-size: 11pt;
+                    line-height: 1.08;
+                    font-weight: 700;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
+                .patient-card-info-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    table-layout: fixed;
+                }
+                .patient-card-info-table td {
+                    padding: 0.55mm 0;
+                    font-size: 6.7pt;
+                    line-height: 1.05;
+                    vertical-align: top;
+                }
+                .patient-card-info-label {
+                    width: 18mm;
+                    color: #5d6678;
+                    font-weight: 700;
+                }
+                .patient-card-info-value {
+                    color: #172033;
+                    font-weight: 600;
+                }
+                .patient-card-blood {
+                    display: inline-block;
+                    min-width: 9mm;
+                    padding: 0.7mm 1.3mm;
+                    color: #ffffff;
+                    background: #c92a2a;
+                    border-radius: 1.2mm;
+                    text-align: center;
+                    font-weight: 700;
+                }
+                .patient-card-photo-frame {
+                    width: 21mm;
+                    height: 27mm;
+                    margin: 0 auto 1.5mm auto;
+                    padding: 0.8mm;
+                    overflow: hidden;
+                    border: 0.3mm solid #c9ced8;
+                    border-radius: 2mm;
+                    background: #f3f5f8;
+                    text-align: center;
+                }
+                .patient-card-photo {
+                    max-width: 19.4mm;
+                    max-height: 25.4mm;
+                    border-radius: 1.4mm;
+                    vertical-align: middle;
+                }
+                .patient-card-photo-placeholder {
+                    width: 19.4mm;
+                    height: 25.4mm;
+                    padding-top: 8.2mm;
+                    border-radius: 1.4mm;
+                    color: #ffffff;
+                    background: #68758d;
+                    font-size: 14pt;
+                    line-height: 1;
+                    font-weight: 700;
+                    text-align: center;
+                }
+                .patient-card-photo-caption {
+                    color: #68758d;
+                    font-size: 5.2pt;
+                    line-height: 1;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1mm;
+                }
+                .patient-card-footer {
+                    position: absolute;
+                    left: 0;
+                    bottom: 0;
+                    width: 80.5mm;
+                    height: 5.8mm;
+                    padding: 1.35mm 3.5mm 0 3.5mm;
+                    color: #ffffff;
+                    background: #172033;
+                    font-size: 5.6pt;
+                    line-height: 1.05;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .patient-card-back-title {
+                    font-size: 9.5pt;
+                    line-height: 1;
+                    font-weight: 700;
+                    letter-spacing: 0.1mm;
+                }
+                .patient-card-back-body {
+                    width: 100%;
+                    height: 38mm;
+                    border-collapse: collapse;
+                    table-layout: fixed;
+                }
+                .patient-card-back-body td {
+                    vertical-align: top;
+                }
+                .patient-card-address-cell {
+                    width: 50mm;
+                    padding: 3mm 2.5mm 2mm 3.5mm;
+                }
+                .patient-card-barcode-cell {
+                    width: 34mm;
+                    padding: 3mm 5.5mm 2mm 1.5mm;
+                    text-align: center;
+                }
+                .patient-card-section-label {
+                    margin-bottom: 1.2mm;
+                    color: #c92a2a;
+                    font-size: 6pt;
+                    line-height: 1;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.12mm;
+                }
+                .patient-card-address {
+                    max-height: 16mm;
+                    overflow: hidden;
+                    color: #172033;
+                    font-size: 6.5pt;
+                    line-height: 1.28;
+                    font-weight: 600;
+                }
+                .patient-card-company {
+                    margin-top: 2.2mm;
+                    padding-top: 1.8mm;
+                    border-top: 0.25mm solid #d9dde5;
+                    color: #4f596c;
+                    font-size: 5.7pt;
+                    line-height: 1.25;
+                }
+                .patient-card-company-name {
+                    color: #172033;
+                    font-size: 6.2pt;
+                    font-weight: 700;
+                }
+                .patient-card-barcode-box {
+                    width: 29mm;
+                    min-height: 18mm;
+                    margin: 0 auto 1.3mm auto;
+                    padding: 1.2mm 0.8mm;
+                    border: 0.25mm solid #d9dde5;
+                    border-radius: 1.5mm;
+                    background: #ffffff;
+                }
+                .patient-card-barcode {
+                    max-width: 27.4mm;
+                    max-height: 16mm;
+                }
+                .patient-card-barcode-number {
+                    color: #172033;
+                    font-size: 6pt;
+                    line-height: 1;
+                    font-weight: 700;
+                    letter-spacing: 0.15mm;
+                }
+                .patient-card-scan-caption {
+                    margin-top: 1.5mm;
+                    color: #68758d;
+                    font-size: 5.2pt;
+                    line-height: 1.2;
+                }
+                .patient-card-back-footer {
+                    position: absolute;
+                    left: 0;
+                    bottom: 0;
+                    width: 80.5mm;
+                    height: 5.8mm;
+                    padding: 1.25mm 3.5mm 0 3.5mm;
+                    color: #ffffff;
+                    background: #172033;
+                    font-size: 5.2pt;
+                    line-height: 1.1;
+                    text-align: center;
+                }
+            </style>
+
+            <!-- Front side -->
+            <div class="page patient-card-page">
+                <div class="patient-card-shell">
+                    <div class="patient-card-accent"/>
+                    <table class="patient-card-header">
+                        <tr>
+                            <td class="patient-card-title">Patient Card</td>
+                            <td class="patient-card-code-label">
+                                Patient No.
+                                <span class="patient-card-code" t-esc="code or '-'"/>
+                            </td>
+                        </tr>
+                    </table>
+                    <table class="patient-card-body">
+                        <tr>
+                            <td class="patient-card-details">
+                                <div class="patient-card-name" t-esc="name or 'Patient'"/>
+                                <table class="patient-card-info-table">
+                                    <tr>
+                                        <td class="patient-card-info-label">Gender</td>
+                                        <td class="patient-card-info-value" t-esc="gender or '-'"/>
+                                    </tr>
+                                    <tr>
+                                        <td class="patient-card-info-label">Age</td>
+                                        <td class="patient-card-info-value">
+                                            <span t-esc="age"/> Years
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="patient-card-info-label">Date of Birth</td>
+                                        <td class="patient-card-info-value">
+                                            <span t-if="dob" t-esc="dob"/>
+                                            <span t-if="not dob">-</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="patient-card-info-label">Blood Group</td>
+                                        <td class="patient-card-info-value">
+                                            <span t-if="blood" class="patient-card-blood" t-esc="blood"/>
+                                            <span t-if="not blood">-</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="patient-card-info-label">Phone</td>
+                                        <td class="patient-card-info-value" t-esc="phone or '-'"/>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td class="patient-card-photo-cell">
+                                <div class="patient-card-photo-frame">
+                                    <img t-if="patient_image"
+                                         class="patient-card-photo"
+                                         t-att-src="image_data_uri(patient_image)"
+                                         alt="Patient Photo"/>
+                                    <div t-if="not patient_image"
+                                         class="patient-card-photo-placeholder"
+                                         t-esc="patient_initials"/>
+                                </div>
+                                <div class="patient-card-photo-caption">Patient Photo</div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="patient-card-footer" t-esc="company_name or 'Hospital Management'"/>
                 </div>
-            </section>
-            <section>
-                <div class="container"
-                     style="margin-top:50px">
-                    <div style="width: 500px; height: 250px; border: 2px black
-                    solid; border-radius: 5px;">
-                        <div style="margin-left: 10px; margin-top: 10px;">
-                            <span style="padding-top:5px padding-top:5px">
-                                <b>Address:</b>
-                                <br/>
-                                <t t-esc="street"/>
-                                <br/>
-                                <t t-esc="street2"/>
-                                <br/>
-                                <t t-esc='city'/>
-                                <t t-esc='state'/>
-                                <br/>
-                                <t t-esc='country'/>
-                                <br/>
-                                <br/>
-                            </span>
-                            <span style="padding-top:5px padding-top:5px">
-                                <b>
-                                    <t t-esc="company_name"/>
-                                </b>
-                                <br/>
-                                <t t-esc="company_street"/>
-                                <br/>
-                                <t t-esc="company_street2"/>
-                                <br/>
-                                <t t-esc='company_city'/>
-                                <t t-esc='company_state'/>
-                                <br/>
-                                <t t-esc='company_zip'/>
-                                <br/>
-                                <br/>
-                            </span>
-                        </div>
-                        <div>
-                            <img style="max-height: 150px; max-width: 180px;
-                            position:absolute; left:310px; top:290px;"
-                                 t-attf-src="data:image/gif;base64,
-                                 {{barcode['barcode_png']}}"/>
-                        </div>
-                    </div>
+            </div>
+
+            <!-- Back side -->
+            <div class="page patient-card-page">
+                <div class="patient-card-shell">
+                    <div class="patient-card-accent"/>
+                    <table class="patient-card-header">
+                        <tr>
+                            <td class="patient-card-back-title">Contact &amp; Identification</td>
+                            <td class="patient-card-code-label">
+                                Patient No.
+                                <span class="patient-card-code" t-esc="code or '-'"/>
+                            </td>
+                        </tr>
+                    </table>
+                    <table class="patient-card-back-body">
+                        <tr>
+                            <td class="patient-card-address-cell">
+                                <div class="patient-card-section-label">Patient Address</div>
+                                <div class="patient-card-address">
+                                    <div t-if="street" t-esc="street"/>
+                                    <div t-if="street2" t-esc="street2"/>
+                                    <div>
+                                        <span t-if="city" t-esc="city"/>
+                                        <span t-if="city and state">, </span>
+                                        <span t-if="state" t-esc="state"/>
+                                        <span t-if="zip"> - <t t-esc="zip"/></span>
+                                    </div>
+                                    <div t-if="country" t-esc="country"/>
+                                    <div t-if="not (street or street2 or city or state or country)">Address not available</div>
+                                </div>
+                                <div class="patient-card-company">
+                                    <div class="patient-card-company-name" t-esc="company_name or 'Hospital Management'"/>
+                                    <div>
+                                        <span t-if="company_street" t-esc="company_street"/>
+                                        <span t-if="company_street2">, <t t-esc="company_street2"/></span>
+                                    </div>
+                                    <div>
+                                        <span t-if="company_city" t-esc="company_city"/>
+                                        <span t-if="company_city and company_state">, </span>
+                                        <span t-if="company_state" t-esc="company_state"/>
+                                        <span t-if="company_zip"> - <t t-esc="company_zip"/></span>
+                                    </div>
+                                    <div t-if="company_phone or company_email">
+                                        <span t-if="company_phone" t-esc="company_phone"/>
+                                        <span t-if="company_phone and company_email"> | </span>
+                                        <span t-if="company_email" t-esc="company_email"/>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="patient-card-barcode-cell">
+                                <div class="patient-card-section-label">Scan Patient ID</div>
+                                <div class="patient-card-barcode-box">
+                                    <img t-if="barcode_image"
+                                         class="patient-card-barcode"
+                                         t-att-src="image_data_uri(barcode_image)"
+                                         alt="Patient Barcode"/>
+                                    <div t-if="not barcode_image" class="patient-card-scan-caption">Barcode unavailable</div>
+                                </div>
+                                <div class="patient-card-barcode-number" t-esc="barcode_number or '-'"/>
+                                <div class="patient-card-scan-caption">Use this card for patient identification.</div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="patient-card-back-footer">If found, please return this card to the issuing hospital.</div>
                 </div>
-            </section>
+            </div>
         </t>
     </template>
 </odoo>
