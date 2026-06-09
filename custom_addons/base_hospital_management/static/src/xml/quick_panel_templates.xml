@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <!-- Reusable Owl action card used by the floating hospital quick panel. -->
-    <t t-name="hospital_management_theme_owl.ActionCard" owl="1">
+    <t t-name="base_hospital_management.ActionCard" owl="1">
         <button type="button" t-att-class="'hmo-quick-item hmo-tone-' + props.item.tone" t-on-click="select">
             <span class="hmo-quick-icon"><i t-att-class="props.item.icon"/></span>
             <span>
@@ -11,8 +11,8 @@
         </button>
     </t>
 
-    <!-- Floating Owl panel. It is displayed only when theme_detector.js finds a hospital screen. -->
-    <t t-name="hospital_management_theme_owl.QuickPanel" owl="1">
+    <!-- Floating Owl panel. It is displayed on hospital screens. -->
+    <t t-name="base_hospital_management.QuickPanel" owl="1">
         <div t-att-class="'hmo-quick-panel ' + (state.open ? 'is-open ' : '') + (state.compact ? 'is-compact ' : '')" aria-live="polite">
             <button type="button" class="hmo-quick-toggle" title="Hospital quick actions" aria-label="Hospital quick actions" t-on-click="toggleOpen">
                 <i class="fa fa-hospital-o"/>
@@ -29,11 +29,11 @@
                 </div>
                 <div class="hmo-quick-grid">
                     <t t-foreach="quickActions" t-as="item" t-key="item.action">
-                        <HospitalThemeActionCard item="item" onSelect.bind="openQuickAction"/>
+                        <HospitalActionCard item="item" onSelect.bind="openQuickAction"/>
                     </t>
                 </div>
                 <div class="hmo-quick-footer">
-                    Theme module only: opens existing base_hospital_management actions and does not change workflows.
+                    Quickly navigate between hospital clinical and administrative modules.
                 </div>
             </div>
         </div>

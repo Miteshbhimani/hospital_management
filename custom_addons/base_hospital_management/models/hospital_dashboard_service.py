@@ -16,10 +16,41 @@ class HospitalDashboardService(models.AbstractModel):
     _description = 'Hospital Dashboard Service'
 
     def _today_bounds(self):
-        today = fields.Date.context_today(self)
-        start = datetime.combine(today, time.min)
-        end = start + timedelta(days=1)
-        return today, fields.Datetime.to_string(start), fields.Datetime.to_string(end)
+        """Return timezone-aware bounds for 'today' in UTC.
+
+        Odoo ORM date/datetime filters expect UTC strings. This helper
+        converts the user's current local 'today' boundaries to UTC strings
+        to ensure dashboard KPIs are accurate for non-UTC rotations.
+        """
+        import pytz
+        tz_name = self.env.context.get('tz') or self.env.user.tz or 'UTC'
+        tz = pytz.timezone(tz_name)
+
+        local_now = datetime.now(tz)
+        local_today_start = tz.localize(datetime.combine(local_now.date(), time.min))
+        local_today_end = local_today_start + timedelta(days=1)
+
+        # Convert to UTC for ORM consistency
+        utc_start = local_today_start.astimezone(pytz.UTC)
+        utc_end = local_today_end.astimezone(pytz.UTC)
+
+        return (
+            fields.Date.to_string(local_now.date()),
+            fields.Datetime.to_string(utc_start),
+            fields.Datetime.to_string(utc_end)
+        )
+
+    def _safe_count(self, model_name, domain=None):
+        """Count records if model exists, else return 0."""
+        if model_name not in self.env:
+            return 0
+        return self.env[model_name].sudo().search_count(domain or [])
+
+    def _safe_search_read(self, model_name, domain=None, field_names=None, limit=10, order=None):
+        """Read records if model exists, else return empty list."""
+        if model_name not in self.env:
+            return []
+        return self.env[model_name].sudo().search_read(domain or [], field_names or [], limit=limit, order=order)
 
     def _patient_domain(self):
         return [('patient_seq', 'not in', ['New', 'Employee', 'User'])]
@@ -28,14 +59,8 @@ class HospitalDashboardService(models.AbstractModel):
         employees = self.env['hr.employee'].sudo().search([('user_id', '=', self.env.user.id)])
         return [('doctor_id', 'in', employees.ids)] if employees else []
 
-    def _count(self, model_name, domain=None):
-        return self.env[model_name].sudo().search_count(domain or [])
-
-    def _search_read(self, model_name, domain=None, field_names=None, limit=10, order=None):
-        return self.env[model_name].sudo().search_read(domain or [], field_names or [], limit=limit, order=order)
-
     def _doctors(self):
-        return self._search_read(
+        return self._safe_search_read(
             'hr.employee',
             [('job_id.name', '=', 'Doctor')],
             ['name', 'work_phone', 'user_id'],
@@ -69,7 +94,7 @@ class HospitalDashboardService(models.AbstractModel):
         } for product in sorted_products]
 
     def _patients(self, limit=200):
-        return self._search_read(
+        return self._safe_search_read(
             'res.partner',
             self._patient_domain(),
             ['name', 'patient_seq', 'phone', 'email', 'date_of_birth', 'gender', 'blood_group', 'rh_type'],
@@ -92,29 +117,29 @@ class HospitalDashboardService(models.AbstractModel):
         ]
         return {
             'kpis': {
-                'patients': self._count('res.partner', self._patient_domain()),
-                'patients_today': self._count('res.partner', self._patient_domain() + [('create_date', '>=', start_dt), ('create_date', '<', end_dt)]),
-                'appointments_today': self._count('hospital.appointment', appointment_today_domain),
-                'queue_waiting': self._count('hospital.appointment', queue_domain),
-                'opd_today': self._count('hospital.outpatient', [('op_date', '=', today), ('state', '!=', 'cancel')]),
-                'ipd_admitted': self._count('hospital.inpatient', [('state', '=', 'admit')]),
-                'available_beds': self._count('hospital.bed', [('state', '=', 'avail')]),
-                'available_rooms': self._count('patient.room', [('state', '=', 'avail')]),
-                'active_emergency': self._count('hospital.emergency.case', [('state', 'in', ['draft', 'triaged', 'under_treatment'])]),
+                'patients': self._safe_count('res.partner', self._patient_domain()),
+                'patients_today': self._safe_count('res.partner', self._patient_domain() + [('create_date', '>=', start_dt), ('create_date', '<', end_dt)]),
+                'appointments_today': self._safe_count('hospital.appointment', appointment_today_domain),
+                'queue_waiting': self._safe_count('hospital.appointment', queue_domain),
+                'opd_today': self._safe_count('hospital.outpatient', [('op_date', '=', today), ('state', '!=', 'cancel')]),
+                'ipd_admitted': self._safe_count('hospital.inpatient', [('state', '=', 'admit')]),
+                'available_beds': self._safe_count('hospital.bed', [('state', '=', 'avail')]),
+                'available_rooms': self._safe_count('patient.room', [('state', '=', 'avail')]),
+                'active_emergency': self._safe_count('hospital.emergency.case', [('state', 'in', ['draft', 'triaged', 'under_treatment'])]),
             },
             'patients': self._patients(),
             'doctors': self._doctors(),
-            'appointments': self._search_read(
+            'appointments': self._safe_search_read(
                 'hospital.appointment',
                 queue_domain,
                 ['name', 'patient_id', 'doctor_id', 'appointment_date', 'token_number', 'priority', 'visit_type', 'state', 'chief_complaint'],
                 limit=20,
                 order='priority desc, token_number asc, appointment_date asc',
             ),
-            'rooms': self._search_read(
+            'rooms': self._safe_search_read(
                 'patient.room', [], ['name', 'building_id', 'floor_no', 'bed_type', 'rent', 'state'], limit=20, order='name asc'
             ),
-            'wards': self._search_read(
+            'wards': self._safe_search_read(
                 'hospital.ward', [], ['ward_no', 'building_id', 'floor_no', 'bed_count'], limit=20, order='ward_no asc'
             ),
         }
@@ -134,29 +159,29 @@ class HospitalDashboardService(models.AbstractModel):
             surgery_domain.append(('doctor_id', '=', employee.id))
         return {
             'kpis': {
-                'appointments_today': self._count('hospital.appointment', appointment_today_domain),
-                'waiting': self._count('hospital.appointment', appointment_today_domain + [('state', 'in', ['draft', 'scheduled', 'checked_in'])]),
-                'opd_today': self._count('hospital.outpatient', [('op_date', '=', today), ('state', '!=', 'cancel')]),
-                'admitted': self._count('hospital.inpatient', [('state', '=', 'admit')]),
-                'surgeries': self._count('inpatient.surgery', surgery_domain + [('state', 'in', ['draft', 'confirmed'])]),
-                'abnormal_vitals': self._count('hospital.vitals', [('abnormal', '=', True), ('recorded_at', '>=', start_dt), ('recorded_at', '<', end_dt)]),
+                'appointments_today': self._safe_count('hospital.appointment', appointment_today_domain),
+                'waiting': self._safe_count('hospital.appointment', appointment_today_domain + [('state', 'in', ['draft', 'scheduled', 'checked_in'])]),
+                'opd_today': self._safe_count('hospital.outpatient', [('op_date', '=', today), ('state', '!=', 'cancel')]),
+                'admitted': self._safe_count('hospital.inpatient', [('state', '=', 'admit')]),
+                'surgeries': self._safe_count('inpatient.surgery', surgery_domain + [('state', 'in', ['draft', 'confirmed'])]),
+                'abnormal_vitals': self._safe_count('hospital.vitals', [('abnormal', '=', True), ('recorded_at', '>=', start_dt), ('recorded_at', '<', end_dt)]),
             },
             'patients': self._patients(),
-            'queue': self._search_read(
+            'queue': self._safe_search_read(
                 'hospital.appointment',
                 appointment_today_domain,
                 ['name', 'patient_id', 'doctor_id', 'appointment_date', 'token_number', 'priority', 'state', 'chief_complaint'],
                 limit=20,
                 order='priority desc, token_number asc, appointment_date asc',
             ),
-            'vitals': self._search_read(
+            'vitals': self._safe_search_read(
                 'hospital.vitals',
                 [('abnormal', '=', True)],
                 ['name', 'patient_id', 'recorded_at', 'temperature_c', 'pulse_rate', 'systolic_bp', 'diastolic_bp', 'spo2', 'triage_category', 'abnormal_reason'],
                 limit=10,
                 order='recorded_at desc',
             ),
-            'surgeries': self._search_read(
+            'surgeries': self._safe_search_read(
                 'inpatient.surgery',
                 surgery_domain,
                 ['name', 'inpatient_id', 'doctor_id', 'planned_date', 'hours_to_take', 'state'],
@@ -170,28 +195,28 @@ class HospitalDashboardService(models.AbstractModel):
         today, start_dt, end_dt = self._today_bounds()
         return {
             'kpis': {
-                'new_requests': self._count('lab.test.line', [('state', '=', 'draft')]),
-                'processing': self._count('patient.lab.test', [('state', '=', 'test')]),
-                'draft_tests': self._count('patient.lab.test', [('state', '=', 'draft')]),
-                'completed_today': self._count('patient.lab.test', [('state', '=', 'completed'), ('write_date', '>=', start_dt), ('write_date', '<', end_dt)]),
-                'published_results': self._count('lab.test.result', [('attachment', '!=', False)]),
-                'catalog_tests': self._count('lab.test', []),
+                'new_requests': self._safe_count('lab.test.line', [('state', '=', 'draft')]),
+                'processing': self._safe_count('patient.lab.test', [('state', '=', 'test')]),
+                'draft_tests': self._safe_count('patient.lab.test', [('state', '=', 'draft')]),
+                'completed_today': self._safe_count('patient.lab.test', [('state', '=', 'completed'), ('write_date', '>=', start_dt), ('write_date', '<', end_dt)]),
+                'published_results': self._safe_count('lab.test.result', [('attachment', '!=', False)]),
+                'catalog_tests': self._safe_count('lab.test', []),
             },
-            'new_requests': self._search_read(
+            'new_requests': self._safe_search_read(
                 'lab.test.line',
                 [('state', '=', 'draft')],
                 ['name', 'patient_id', 'doctor_id', 'date', 'patient_type', 'op_id', 'ip_id', 'test_ids', 'state'],
                 limit=20,
                 order='date asc, id asc',
             ),
-            'in_process': self._search_read(
+            'in_process': self._safe_search_read(
                 'patient.lab.test',
                 [('state', 'in', ['draft', 'test'])],
                 ['test_id', 'patient_id', 'patient_type', 'date', 'total_price', 'state', 'lab_id'],
                 limit=20,
                 order='date asc, id asc',
             ),
-            'published': self._search_read(
+            'published': self._safe_search_read(
                 'lab.test.result',
                 [('attachment', '!=', False)],
                 ['parent_id', 'patient_id', 'test_id', 'result', 'normal', 'uom_id'],
@@ -211,16 +236,16 @@ class HospitalDashboardService(models.AbstractModel):
         low_stock_medicines = self._low_stock_medicines()
         return {
             'kpis': {
-                'medicines': self._count('product.template', [('medicine_ok', '=', True)]),
-                'vaccines': self._count('product.template', [('vaccine_ok', '=', True)]),
+                'medicines': self._safe_count('product.template', [('medicine_ok', '=', True)]),
+                'vaccines': self._safe_count('product.template', [('vaccine_ok', '=', True)]),
                 'low_stock': len(low_stock_medicines),
                 'orders_today': len(orders_today),
                 'sales_today': sum(orders_today.mapped('amount_total')),
-                'pending_orders': self._count('sale.order', [('partner_id.patient_seq', 'not in', ['New', 'Employee', 'User']), ('state', 'in', ['draft', 'sent'])]),
+                'pending_orders': self._safe_count('sale.order', [('partner_id.patient_seq', 'not in', ['New', 'Employee', 'User']), ('state', 'in', ['draft', 'sent'])]),
             },
             'currency': self.env.company.currency_id.symbol or '',
             'patients': self._patients(),
-            'medicines': self._search_read(
+            'medicines': self._safe_search_read(
                 'product.template',
                 [('medicine_ok', '=', True)],
                 ['name', 'list_price', 'qty_available', 'medicine_brand_id', 'uom_id'],
@@ -228,7 +253,7 @@ class HospitalDashboardService(models.AbstractModel):
                 order='name asc',
             ),
             'low_stock': low_stock_medicines[:20],
-            'orders': self._search_read(
+            'orders': self._safe_search_read(
                 'sale.order',
                 [('partner_id.patient_seq', 'not in', ['New', 'Employee', 'User'])],
                 ['name', 'date_order', 'partner_id', 'amount_total', 'state'],

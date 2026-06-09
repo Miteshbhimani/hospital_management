@@ -20,8 +20,8 @@ function storeCompactPreference(compact) {
     }
 }
 
-export class HospitalThemeActionCard extends Component {
-    static template = "hospital_management_theme_owl.ActionCard";
+export class HospitalActionCard extends Component {
+    static template = "base_hospital_management.ActionCard";
     static props = {
         item: Object,
         onSelect: Function,
@@ -34,9 +34,9 @@ export class HospitalThemeActionCard extends Component {
     }
 }
 
-export class HospitalThemeQuickPanel extends Component {
-    static template = "hospital_management_theme_owl.QuickPanel";
-    static components = { HospitalThemeActionCard };
+export class HospitalQuickPanel extends Component {
+    static template = "base_hospital_management.QuickPanel";
+    static components = { HospitalActionCard };
     static props = {};
 
     setup() {
@@ -72,13 +72,13 @@ export class HospitalThemeQuickPanel extends Component {
             await this.action.doAction(item.action);
             this.state.open = false;
         } catch (_error) {
-            this.notification.add(`Could not open ${item.title}. Check access rights or whether the base action exists.`, {
+            this.notification.add(`Could not open ${item.title}. Check access rights or module configuration.`, {
                 type: "warning",
             });
         }
     }
 }
 
-registry.category("main_components").add("hospital_management_theme_owl.quick_panel", {
-    Component: HospitalThemeQuickPanel,
+registry.category("main_components").add("base_hospital_management.quick_panel", {
+    Component: HospitalQuickPanel,
 });
