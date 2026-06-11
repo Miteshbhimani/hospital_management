@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hospital_insurance_view_form_accounting" model="ir.ui.view">
+        <field name="name">hospital.insurance.form.accounting</field>
+        <field name="model">hospital.insurance</field>
+        <field name="arch" type="xml">
+            <form string="Insurance Provider">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="partner_id"/>
+                            <field name="total_coverage"/>
+                            <field name="coverage_percent"/>
+                        </group>
+                        <group>
+                            <field name="receivable_account_id"/>
+                            <field name="claim_journal_id"/>
+                            <field name="currency_id"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="hospital_insurance_action_accounting" model="ir.actions.act_window">
+        <field name="name">Insurance Providers</field>
+        <field name="res_model">hospital.insurance</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

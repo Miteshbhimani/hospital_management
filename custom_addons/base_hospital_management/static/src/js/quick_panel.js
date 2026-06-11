@@ -68,14 +68,9 @@ export class HospitalQuickPanel extends Component {
     }
 
     async openQuickAction(item) {
-        try {
-            await this.action.doAction(item.action);
-            this.state.open = false;
-        } catch (_error) {
-            this.notification.add(`Could not open ${item.title}. Check access rights or module configuration.`, {
-                type: "warning",
-            });
-        }
+        const url = `${window.location.origin}/web#action=${item.action}`;
+        window.open(url, "_blank");
+        this.state.open = false;
     }
 }
 

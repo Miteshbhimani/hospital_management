@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_hospital_insurance_claim" model="ir.sequence">
+        <field name="name">Hospital Insurance Claim</field>
+        <field name="code">hospital.insurance.claim</field>
+        <field name="prefix">CLAIM/%(year)s/</field>
+        <field name="padding">5</field>
+    </record>
+    <record id="product_hospital_package" model="product.product">
+        <field name="name">Hospital Billing Package</field>
+        <field name="type">service</field>
+        <field name="sale_ok">1</field>
+        <field name="purchase_ok">0</field>
+        <field name="list_price">0.0</field>
+    </record>
+</odoo>

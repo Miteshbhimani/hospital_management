@@ -48,8 +48,6 @@ class LabTestResult(models.Model):
                                   help='Currency in which payments to be done')
     price = fields.Monetary(string='Cost', help='Cost for the test',
                             related='test_id.price')
-    tax_ids = fields.Many2many('account.tax', string='Tax',
-                               help='Tax for the test')
     state = fields.Selection(selection=[('processing', 'Processing'),
                                         ('published', 'Published')],
                              string='State', help='State of the result',
@@ -70,13 +68,11 @@ class LabTestResult(models.Model):
         data = self.sudo().search([])
         context = []
         for rec in data:
-            self.env.cr.execute(
-                f"""SELECT id FROM ir_attachment WHERE res_id = {rec.id} 
-                                            and res_model='lab.test.result' """)
-            attachment_id = False
-            attachment = self.env.cr.dictfetchall()
-            if attachment:
-                attachment_id = attachment[0]['id']
+            attachment = self.env['ir.attachment'].sudo().search([
+                ('res_model', '=', 'lab.test.result'),
+                ('res_id', '=', rec.id),
+            ], limit=1, order='id desc')
+            attachment_id = attachment.id if attachment else False
             context.append({
                 'id': rec.id,
                 'parent_id': rec.parent_id.test_id.name,

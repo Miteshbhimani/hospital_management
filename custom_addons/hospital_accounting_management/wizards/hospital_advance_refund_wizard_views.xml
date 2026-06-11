@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hospital_advance_refund_wizard_view_form" model="ir.ui.view">
+        <field name="name">hospital.advance.refund.wizard.view.form</field>
+        <field name="model">hospital.advance.refund.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="operation_type"/>
+                        <field name="patient_id"/>
+                        <field name="outpatient_id" invisible="not outpatient_id"/>
+                        <field name="inpatient_id" invisible="not inpatient_id"/>
+                    </group>
+                    <group>
+                        <field name="amount"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="journal_id"/>
+                        <field name="payment_date"/>
+                        <field name="memo"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_create_payment" string="Confirm" type="object" class="btn-primary"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -109,12 +109,12 @@ export class PharmacyDashboard extends Component {
             dob: this.state.saleForm.dob,
             products,
         }]);
-        this.notification.add(_t('Sale order created: ') + result.invoice, { type: 'success' });
+        this.notification.add(_t('Sale order created: ') + result.order_name, { type: 'success' });
         Object.assign(this.state.saleForm, { patient_id: '', name: '', phone: '', email: '', dob: '' });
         this.state.orderLines = [];
         this.addRow();
         await this.loadDashboard();
-        this.openRecord('sale.order', result.invoice_id, _t('Sale Order'));
+        this.openRecord('sale.order', result.order_name_id, _t('Sale Order'));
     }
 
     get filteredMedicines() {

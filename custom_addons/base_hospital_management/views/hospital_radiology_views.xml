@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hospital_radiology_request_view_form" model="ir.ui.view">
+        <field name="name">hospital.radiology.request.view.form</field>
+        <field name="model">hospital.radiology.request</field>
+        <field name="arch" type="xml">
+            <form string="Radiology Request">
+                <header>
+                    <button name="action_requested" string="Request" type="object" invisible="state != 'draft'" class="oe_highlight"/>
+                    <button name="action_confirm" string="Confirm" type="object" invisible="state != 'requested'" class="oe_highlight"/>
+                    <button name="action_complete" string="Complete" type="object" invisible="state != 'confirmed'" class="oe_highlight"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state in ['completed', 'cancelled']"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,requested,confirmed,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box"></div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group name="study_details">
+                            <field name="patient_id"/>
+                            <field name="doctor_id"/>
+                            <field name="modality_id"/>
+                            <field name="body_part"/>
+                        </group>
+                        <group>
+                            <field name="outpatient_id"/>
+                            <field name="inpatient_id"/>
+                            <field name="estimated_price"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Reason" name="reason">
+                            <field name="reason" placeholder="Add reason for request..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="hospital_radiology_request_view_tree" model="ir.ui.view">
+        <field name="name">hospital.radiology.request.view.tree</field>
+        <field name="model">hospital.radiology.request</field>
+        <field name="arch" type="xml">
+            <list string="Radiology Requests">
+                <field name="name"/>
+                <field name="patient_id"/>
+                <field name="doctor_id"/>
+                <field name="modality_id"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hospital_radiology_request_action" model="ir.actions.act_window">
+        <field name="name">Radiology Requests</field>
+        <field name="res_model">hospital.radiology.request</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

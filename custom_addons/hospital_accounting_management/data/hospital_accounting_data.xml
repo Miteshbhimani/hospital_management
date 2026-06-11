@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_hospital_consultation" model="product.product">
+        <field name="name">Hospital Consultation</field>
+        <field name="type">service</field>
+        <field name="sale_ok">1</field>
+        <field name="purchase_ok">0</field>
+        <field name="list_price">0.0</field>
+    </record>
+    <record id="product_hospital_followup" model="product.product">
+        <field name="name">Hospital Follow-up</field>
+        <field name="type">service</field>
+        <field name="sale_ok">1</field>
+        <field name="purchase_ok">0</field>
+        <field name="list_price">0.0</field>
+    </record>
+    <record id="product_hospital_bed_rent" model="product.product">
+        <field name="name">Hospital Bed Rent</field>
+        <field name="type">service</field>
+        <field name="sale_ok">1</field>
+        <field name="purchase_ok">0</field>
+        <field name="list_price">0.0</field>
+    </record>
+    <record id="product_hospital_room_rent" model="product.product">
+        <field name="name">Hospital Room Rent</field>
+        <field name="type">service</field>
+        <field name="sale_ok">1</field>
+        <field name="purchase_ok">0</field>
+        <field name="list_price">0.0</field>
+    </record>
+    <record id="product_hospital_lab_test" model="product.product">
+        <field name="name">Hospital Lab Test</field>
+        <field name="type">service</field>
+        <field name="sale_ok">1</field>
+        <field name="purchase_ok">0</field>
+        <field name="list_price">0.0</field>
+    </record>
+    <record id="product_hospital_radiology" model="product.product">
+        <field name="name">Hospital Radiology Service</field>
+        <field name="type">service</field>
+        <field name="sale_ok">1</field>
+        <field name="purchase_ok">0</field>
+        <field name="list_price">0.0</field>
+    </record>
+    <record id="hospital_accounting_dashboard_main" model="hospital.accounting.dashboard">
+        <field name="name">Hospital Accounting Dashboard</field>
+    </record>
+</odoo>

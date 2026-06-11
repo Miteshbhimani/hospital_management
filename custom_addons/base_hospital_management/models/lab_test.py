@@ -36,9 +36,6 @@ class LabTest(models.Model):
                                   self.env.user.company_id.currency_id.id,
                                   required=True, help='Currency in which '
                                                       'payments will be done')
-    tax_ids = fields.Many2many('account.tax', string='Tax',
-                               domain=[('type_tax_use', '=', 'sale')],
-                               help='Tax for the test')
     medicine_ids = fields.One2many('lab.medicine.line',
                                    'test_id',
                                    string='Medicines',

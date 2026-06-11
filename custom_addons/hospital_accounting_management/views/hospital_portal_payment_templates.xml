@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_my_home_hospital_invoices" name="Hospital Invoices" inherit_id="portal.portal_my_home" priority="35">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Hospital Invoices</t>
+                <t t-set="url" t-value="'/my/hospital/invoices'"/>
+                <t t-set="text">View hospital bills, outstanding balances and payment links.</t>
+                <t t-set="placeholder_count" t-value="'hospital_invoice_count'"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_my_hospital_invoices" name="My Hospital Invoices">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Hospital Invoices</t>
+            </t>
+            <t t-if="not hospital_invoices">
+                <p>There are currently no hospital invoices for your account.</p>
+            </t>
+            <t t-if="hospital_invoices" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Invoice</th>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Outstanding</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <t t-foreach="hospital_invoices" t-as="invoice">
+                    <tr>
+                        <td><t t-esc="invoice['name']"/></td>
+                        <td><t t-esc="invoice['date']"/></td>
+                        <td><t t-esc="invoice['type']"/></td>
+                        <td class="text-end"><t t-esc="invoice['currency']"/> <t t-esc="invoice['amount_total']"/></td>
+                        <td class="text-end"><t t-esc="invoice['currency']"/> <t t-esc="invoice['amount_residual']"/></td>
+                        <td><t t-esc="invoice['payment_state']"/></td>
+                        <td><a class="btn btn-sm btn-primary" t-att-href="invoice['url']">View / Pay</a></td>
+                    </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

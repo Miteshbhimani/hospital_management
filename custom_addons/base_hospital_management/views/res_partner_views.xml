@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <odoo>
     <!--    Res partner search view-->
     <record id="res_partner_view_search" model="ir.ui.view">
@@ -95,7 +95,6 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_view_invoice" type="object" class="oe_stat_button" invisible="name == False" icon="fa-pencil-square-o" string="Invoice"/>
                         <button name="action_generate_patient_card" type="object" class="oe_stat_button" invisible="is_alive == 'dead'" icon="fa-download" string="Patient Card"/>
                         <button class="oe_stat_button" type="object" name="alive_status" invisible="['|',(is_alive == 'dead'),(name == False)]" icon="fa-check">
                             <span class="o_stat_text text-success">ALIVE</span>

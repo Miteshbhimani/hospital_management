@@ -135,13 +135,11 @@ class HospitalVaccination(models.Model):
         data = self.sudo().search(kwargs['domain'])
         context = []
         for rec in data:
-            self.env.cr.execute(
-                f"""SELECT id FROM ir_attachment WHERE 
-                res_id = {rec.id} and res_model='hospital.vaccination' """)
-            attachment_id = False
-            attachment = self.env.cr.dictfetchall()
-            if attachment:
-                attachment_id = attachment[0]['id']
+            attachment = self.env['ir.attachment'].sudo().search([
+                ('res_model', '=', 'hospital.vaccination'),
+                ('res_id', '=', rec.id),
+            ], limit=1, order='id desc')
+            attachment_id = attachment.id if attachment else False
             context.append({
                 'id': rec.id,
                 'name': rec.name,

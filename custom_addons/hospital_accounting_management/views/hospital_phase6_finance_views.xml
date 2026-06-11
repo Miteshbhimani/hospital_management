@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hospital_enterprise_finance_snapshot_view_list" model="ir.ui.view">
+        <field name="name">hospital.enterprise.finance.snapshot.view.list</field>
+        <field name="model">hospital.enterprise.finance.snapshot</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="snapshot_date"/>
+                <field name="branch_id"/>
+                <field name="invoice_count"/>
+                <field name="gross_revenue"/>
+                <field name="paid_revenue"/>
+                <field name="outstanding_amount"/>
+                <field name="pending_claim_count"/>
+            </list>
+        </field>
+    </record>
+    <record id="hospital_enterprise_finance_snapshot_view_form" model="ir.ui.view">
+        <field name="name">hospital.enterprise.finance.snapshot.view.form</field>
+        <field name="model">hospital.enterprise.finance.snapshot</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_compute_snapshot" type="object" string="Compute Finance Snapshot" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="snapshot_date"/>
+                            <field name="branch_id"/>
+                            <field name="company_id"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="invoice_count"/>
+                            <field name="posted_invoice_count"/>
+                            <field name="paid_invoice_count"/>
+                            <field name="outstanding_invoice_count"/>
+                        </group>
+                    </group>
+                    <group string="Revenue">
+                        <field name="gross_revenue"/>
+                        <field name="paid_revenue"/>
+                        <field name="outstanding_amount"/>
+                    </group>
+                    <group string="Insurance">
+                        <field name="insurance_claim_count"/>
+                        <field name="pending_claim_count"/>
+                        <field name="settled_claim_count"/>
+                        <field name="insurance_claim_amount"/>
+                        <field name="patient_payable_amount"/>
+                    </group>
+                    <field name="notes"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="hospital_enterprise_finance_snapshot_action" model="ir.actions.act_window">
+        <field name="name">Enterprise Finance BI</field>
+        <field name="res_model">hospital.enterprise.finance.snapshot</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <menuitem id="hospital_enterprise_finance_snapshot_menu" name="Enterprise Finance BI" parent="hospital_accounting_menu_root" action="hospital_enterprise_finance_snapshot_action" sequence="20" groups="hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+</odoo>

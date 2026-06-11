@@ -57,7 +57,7 @@
                 </section>
 
                 <section class="hm-panel" t-if="state.active === 'processing'">
-                    <div class="hm-panel-header"><div><h2>Draft / Processing Patient Tests</h2><p>Open patient lab test records for result entry, invoice or sale operations.</p></div><button class="btn btn-outline-primary" t-on-click="openPatientTests">Open Patient Tests</button></div>
+                    <div class="hm-panel-header"><div><h2>Draft / Processing Patient Tests</h2><p>Open patient lab test records for result entry and sale operations.</p></div><button class="btn btn-outline-primary" t-on-click="openPatientTests">Open Patient Tests</button></div>
                     <div class="table-responsive hm-table-wrap">
                         <table class="table hm-table">
                             <thead><tr><th>Test</th><th>Patient</th><th>Type</th><th>Date</th><th>Lab</th><th>Total</th><th>Status</th></tr></thead>

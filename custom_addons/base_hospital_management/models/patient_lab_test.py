@@ -68,8 +68,6 @@ class PatientLabTest(models.Model):
     notes = fields.Text(string='Notes', help='Notes regarding the test')
     lab_id = fields.Many2one('hospital.laboratory', string='Lab',
                              help='Lab in which test is doing')
-    invoice_id = fields.Many2one('account.move', string='Invoice',
-                                 help='Invoice for the test', copy=False)
     order = fields.Integer(string='Sale Order',
                            help='Number of sale orders for vaccines and '
                                 'medicines',
@@ -77,19 +75,11 @@ class PatientLabTest(models.Model):
     started = fields.Boolean(string='Test Started',
                              help='True if the test has been started',
                              copy=False)
-    invoiced = fields.Boolean(string='Invoiced',
-                              help='True if the test has been invoiced',
-                              copy=False)
     sold = fields.Boolean(string='Sold',
                           help='If true, sale order smart button will be '
                                'visible ', copy=False)
     company_id = fields.Many2one('res.company', string='Company',
                                  default=lambda self: self.env.company.id)
-    invoice_count = fields.Integer(string='Invoice '
-                                          'Count',
-                                   compute='_compute_invoice_count',
-                                   help='Total number of invoices for this '
-                                        'patient lab test.')
     sale_count = fields.Integer(string='Sale '
                                        'Count',
                                 compute='_compute_sale_count',
@@ -103,15 +93,7 @@ class PatientLabTest(models.Model):
     def _compute_medicine_ids(self):
         """Method for computing medicine_ids"""
         for record in self:
-            record.medicine_ids = self.test_ids.medicine_ids
-
-    def _compute_invoice_count(self):
-        """Method for computing invoice_count"""
-        for record in self:
-            record.invoice_count = self.env['account.move'].sudo().search_count(
-                ['|', (
-                    'ref', '=', record.test_id.name), ('payment_reference', '=',
-                                                       record.test_id.name)])
+            record.medicine_ids = record.test_ids.medicine_ids
 
     def _compute_sale_count(self):
         """Method for computing sale_count"""
@@ -138,7 +120,7 @@ class PatientLabTest(models.Model):
                 'doctor': data.test_id.doctor_id.name,
                 'patient_type': data.patient_type.capitalize(),
                 'state': data.state,
-                'invoiced': data.invoiced,
+                'invoiced': bool(getattr(data, 'invoiced', False)),
                 'ticket': data.test_id.op_id.op_reference
                 if data.patient_type == 'outpatient'
                 else data.test_id.patient_id.patient_seq,
@@ -189,7 +171,6 @@ class PatientLabTest(models.Model):
                 'result_ids': [(0, 0, {
                     'patient_id': data.patient_id.id,
                     'test_id': rec.id,
-                    'tax_ids': rec.tax_ids.ids
                 })]
             })
             [med_list.append(i) for i in medicine_ids]
@@ -201,55 +182,6 @@ class PatientLabTest(models.Model):
         data = self.sudo().browse(rec_id)
         data.state = 'completed'
 
-    @api.model
-    def create_invoice(self, rec_id):
-        """Method for creating invoice"""
-        data = self.sudo().browse(rec_id)
-        order_lines = []
-        partner_id = data.patient_id.id
-        if data.medicine_ids:
-            for rec in data.medicine_ids:
-                order_lines.append((0, 0, {
-                    'product_id': self.env['product.product'].sudo().search([
-                        ('product_tmpl_id', '=', rec.medicine_id.id)]).id,
-                    'name': rec.medicine_id.name,
-                    'price_unit': rec.price,
-                    'product_uom_qty': rec.quantity,
-                }))
-            sale_order = self.env['sale.order'].sudo().create({
-                'partner_id': partner_id,
-                'date_order': fields.Date.today(),
-                'reference': data.test_id.name,
-                'order_line': order_lines
-            })
-            data.sold = True
-            data.order = sale_order.id
-        invoice_id = self.env['account.move'].sudo().search(
-            [('ref', '=', data.test_id.name)
-             ], limit=1)
-        if not invoice_id:
-            invoice_id = self.env['account.move'].sudo().create({
-                'move_type': 'out_invoice',
-                'partner_id': partner_id,
-                'invoice_date': fields.Date.today(),
-                'date': fields.Date.today(),
-                'ref': data.test_id.name
-            })
-        for rec in data.result_ids:
-            invoice_id.sudo().write({
-                'invoice_line_ids': [(
-                    0, 0, {
-                        'quantity': 1,
-                        'name': rec.test_id.name,
-                        'price_unit': rec.price,
-                        'tax_ids': rec.tax_ids.ids,
-                        'price_subtotal': rec.price,
-                    }
-                )]
-            })
-        data.invoiced = True
-        data.invoice_id = invoice_id.id
-
     def action_test_end(self):
         """Button action for test end"""
         self.state = 'completed'
@@ -257,21 +189,6 @@ class PatientLabTest(models.Model):
     def action_start_test(self):
         """Button action for start test"""
         self.start_test(self.id)
-
-    def action_create_invoice(self):
-        """Button action for creating invoice"""
-        self.create_invoice(self.id)
-
-    def action_view_invoice(self):
-        """Method for viewing invoice from the smart button"""
-        return {
-            'name': 'Invoice',
-            'type': 'ir.actions.act_window',
-            'res_model': 'account.move',
-            'view_mode': 'list,form',
-            "context": {"create": False, 'default_move_type': 'out_invoice'},
-            'domain': [('id', '=', self.invoice_id.id)]
-        }
 
     def action_view_sale_order(self):
         """Method for viewing sale order from the smart button"""
@@ -290,7 +207,7 @@ class PatientLabTest(models.Model):
         test_list = []
         for rec in self.result_ids:
             datas = {
-                'test': rec.test_id.test,
+                'test': rec.test_id.name,
                 'normal': rec.normal,
                 'uom_id': rec.uom_id.name,
                 'result': rec.result,

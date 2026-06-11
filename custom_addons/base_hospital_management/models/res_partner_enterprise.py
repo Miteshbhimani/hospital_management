@@ -43,3 +43,4 @@ class ResPartner(models.Model):
     consent_ids = fields.One2many('hospital.consent', 'patient_id', string='Consent Records')
     vitals_ids = fields.One2many('hospital.vitals', 'patient_id', string='Vitals')
     appointment_ids = fields.One2many('hospital.appointment', 'patient_id', string='Appointments')
+    ai_suggestion_ids = fields.One2many('hospital.ai.suggestion', 'patient_id', string='AI / Rule Suggestions')

@@ -104,7 +104,7 @@ class HospitalPharmacy(models.Model):
                 {
                     'is_sale_created': True
                 })
-        return {'invoice_id': pharmacy_sale_order.id, 'invoice': pharmacy_sale_order.name}
+        return {'order_id': pharmacy_sale_order.id, 'order_name': pharmacy_sale_order.name}
 
     @api.model
     def company_currency(self):
@@ -113,10 +113,8 @@ class HospitalPharmacy(models.Model):
 
     @api.model
     def tax_amount(self, kw):
-        """Amount in tax of selected product in pharmacy"""
-        return {
-            'amount': self.env['account.tax'].sudo().browse(kw).amount
-        }
+        """Return zero tax in the clinical base module. Tax calculation is provided by hospital_accounting_management."""
+        return {'amount': 0.0}
 
     def action_get_inventory(self):
         """Inventory adjustment for medicine"""

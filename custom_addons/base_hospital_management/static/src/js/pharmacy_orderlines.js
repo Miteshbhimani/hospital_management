@@ -33,7 +33,6 @@ export class PharmacyOrderLines extends Component {
         })
         this.fetch_product();
         this.fetch_uom();
-        this.fetch_tax();
     }
 //  Fetch product details
     async fetch_product() {
@@ -48,12 +47,6 @@ export class PharmacyOrderLines extends Component {
         var uom_lst= [];
         var result= await this.orm.call( 'uom.uom','search_read',)
         this.uom_lst=result
-    }
-//  Fetch tax amount of product.
-    async fetch_tax(){
-        var tax_lst= [];
-        var result= await this.orm.call( 'account.tax','search_read',)
-        this.tax_lst=result
     }
     async create_order() {
         // Get currency symbol and store it in reactive state

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='UTF-8'?>
 <odoo>
     <!--Lab test form view-->
     <record id="lab_test_view_form" model="ir.ui.view">
@@ -14,7 +14,6 @@
                             <field name="test_type"/>
                         </group>
                         <group>
-                            <field name="tax_ids" widget="many2many_tags"/>
                             <field name="currency_id" invisible="1"/>
                             <field name="price" widget="monetary"/>
                         </group>
@@ -40,7 +39,6 @@
             <list>
                 <field name="name"/>
                 <field name="patient_lead" widget="float_time"/>
-                <field name="tax_ids" widget="many2many_tags"/>
                 <field name="price" widget="monetary"/>
             </list>
         </field>
@@ -57,7 +55,5 @@
         </field>
     </record>
     <!--Lab test menu-->
-    <menuitem id="lab_test_menu" name="Lab Test"
-              parent="hospital_menu_laboratory" sequence="4"
-              action="lab_test_action"/>
+    <menuitem id="lab_test_menu" name="Lab Test" parent="hospital_menu_laboratory" sequence="4" action="lab_test_action"/>
 </odoo>

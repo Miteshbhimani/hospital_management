@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hospital_outpatient_view_form_advance_refund" model="ir.ui.view">
+        <field name="name">hospital.outpatient.form.advance.refund</field>
+        <field name="model">hospital.outpatient</field>
+        <field name="inherit_id" ref="hospital_accounting_management.hospital_outpatient_view_form_accounting"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='create_invoice']" position="after">
+                <button name="action_collect_advance" string="Collect Advance" type="object" groups="hospital_accounting_management.group_hospital_cashier,hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+                <button name="action_process_refund" string="Refund" type="object" groups="hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+            </xpath>
+            <xpath expr="//group[@name='accounting_group']/group[2]" position="inside">
+                <field name="advance_amount" readonly="1"/>
+                <field name="refund_amount" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hospital_inpatient_view_form_advance_refund" model="ir.ui.view">
+        <field name="name">hospital.inpatient.form.advance.refund</field>
+        <field name="model">hospital.inpatient</field>
+        <field name="inherit_id" ref="hospital_accounting_management.hospital_inpatient_view_form_accounting"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_invoice']" position="after">
+                <button name="action_collect_advance" string="Collect Advance" type="object" groups="hospital_accounting_management.group_hospital_cashier,hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+                <button name="action_process_refund" string="Refund" type="object" groups="hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+            </xpath>
+            <xpath expr="//group[@name='accounting_group']/group[2]" position="inside">
+                <field name="advance_amount" readonly="1"/>
+                <field name="refund_amount" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

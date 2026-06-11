@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <odoo>
     <!--Patient Lab Test form view-->
     <record id="patient_lab_test_view_form" model="ir.ui.view">
@@ -8,38 +8,13 @@
             <form>
                 <header>
                     <field name="state" widget="statusbar"/>
-                    <button name="action_start_test"
-                            string="Start Test"
-                            class="oe_highlight"
-                            invisible="state !='draft'"
-                            groups="base_hospital_management.base_hospital_management_group_lab_assistant"
-                            type="object"/>
-                    <button name="action_test_end"
-                            string="End Test"
-                            class="oe_highlight"
-                            invisible="state != 'test'"
-                            groups="base_hospital_management.base_hospital_management_group_lab_assistant"
-                            type="object"/>
-                    <button name="action_create_invoice"
-                            string="Create Invoice"
-                            class="oe_highlight"
-                            groups="base_hospital_management.base_hospital_management_group_lab_assistant"
-                            invisible="state != 'completed' or invoiced == True"
-                            type="object"/>
-                </header>
+                    <button name="action_start_test" string="Start Test" class="oe_highlight" invisible="state !='draft'" groups="base_hospital_management.base_hospital_management_group_lab_assistant" type="object"/>
+                    <button name="action_test_end" string="End Test" class="oe_highlight" invisible="state != 'test'" groups="base_hospital_management.base_hospital_management_group_lab_assistant" type="object"/>
+                    </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_view_invoice" type="object"
-                                class="oe_stat_button" icon="fa-edit"
-                                invisible="invoice_count == 0">
-                            <field string="Invoice" name="invoice_count"
-                                   widget="statinfo"/>
-                        </button>
-                        <button name="action_view_sale_order" type="object"
-                                class="oe_stat_button" icon="fa-usd"
-                                invisible="sale_count == 0">
-                            <field string="Sale Order" name="sale_count"
-                                   widget="statinfo"/>
+                        <button name="action_view_sale_order" type="object" class="oe_stat_button" icon="fa-usd" invisible="sale_count == 0">
+                            <field string="Sale Order" name="sale_count" widget="statinfo"/>
                         </button>
                     </div>
                     <group>
@@ -47,12 +22,10 @@
                             <field name="test_id"/>
                             <field name="patient_id" widget="selection"/>
                             <field name="patient_type"/>
-                            <field name="invoiced" invisible="1"/>
-                        </group>
+                            </group>
                         <group>
                             <field name="date"/>
-                            <field name="lab_id"
-                                   options="{'no_create': True, 'no_edit': True}"/>
+                            <field name="lab_id" options="{'no_create': True, 'no_edit': True}"/>
                         </group>
                     </group>
                     <notebook>
@@ -69,8 +42,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page name="Result"
-                              invisible="state == 'draft'">
+                        <page name="Result" invisible="state == 'draft'">
                             <field name="result_ids">
                                 <list editable="bottom">
                                     <field name="test_id"/>
@@ -110,7 +82,5 @@
         </field>
     </record>
     <!--    Patient Lab Test menu-->
-    <menuitem id="patient_lab_test_menu" name="All Tests"
-              parent="hospital_menu_laboratory" sequence="1"
-              action="patient_lab_test_action"/>
+    <menuitem id="patient_lab_test_menu" name="All Tests" parent="hospital_menu_laboratory" sequence="1" action="patient_lab_test_action"/>
 </odoo>

@@ -19,6 +19,7 @@
                     <div class="container">
                         <form action="/patient_booking/success"
                               method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                             <div class="row">
                                 <div class="mb-3 col-8">
                                     <label for="name"

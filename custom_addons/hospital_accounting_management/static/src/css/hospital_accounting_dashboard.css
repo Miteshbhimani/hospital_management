@@ -1,0 +1,61 @@
+
+.o_hms_accounting_dashboard {
+    margin-top: 18px;
+}
+.o_hms_dashboard_section_title {
+    color: #334155;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    margin: 10px 0 12px;
+    text-transform: uppercase;
+}
+.o_hms_metric_card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
+    min-height: 118px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+}
+.o_hms_metric_card:after {
+    background: rgba(99, 102, 241, .10);
+    border-radius: 50%;
+    bottom: -32px;
+    content: '';
+    height: 92px;
+    position: absolute;
+    right: -24px;
+    width: 92px;
+}
+.o_hms_metric_card span {
+    color: #64748b;
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+.o_hms_metric_card strong,
+.o_hms_metric_card .o_field_monetary {
+    color: #0f172a;
+    display: block;
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1.2;
+}
+.o_hms_metric_card.primary { border-top: 4px solid #2563eb; }
+.o_hms_metric_card.success { border-top: 4px solid #16a34a; }
+.o_hms_metric_card.warning { border-top: 4px solid #f59e0b; }
+.o_hms_metric_card.danger { border-top: 4px solid #ef4444; }
+.o_hms_metric_card.compact {
+    min-height: 92px;
+    padding: 14px;
+}
+.o_hms_metric_card.compact strong,
+.o_hms_metric_card.compact .o_field_monetary {
+    font-size: 20px;
+}

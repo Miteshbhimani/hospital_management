@@ -326,18 +326,6 @@ class ResPartner(models.Model):
                     'patient.sequence') or 'New'
         return super().create(vals_list)
 
-    def action_view_invoice(self):
-        """Returns patient invoice"""
-        self.ensure_one()
-        return {
-            'name': 'Patient Invoice',
-            'view_mode': 'list,form',
-            'res_model': 'account.move',
-            'type': 'ir.actions.act_window',
-            'domain': [('partner_id', '=', self.id)],
-            'context': "{'create':False}"
-        }
-
     def name_get(self):
         """Returns the patient name"""
         result = []

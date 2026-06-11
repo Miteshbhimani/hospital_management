@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="lab_test_view_form_accounting" model="ir.ui.view">
+        <field name="name">lab.test.form.accounting</field>
+        <field name="model">lab.test</field>
+        <field name="inherit_id" ref="base_hospital_management.lab_test_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group//field[@name='price']" position="before">
+                <field name="tax_ids" widget="many2many_tags"/>
+            </xpath>
+            <xpath expr="//sheet/group[1]" position="after">
+                <group string="Accounting Mapping">
+                    <field name="product_id"/>
+                    <field name="service_type"/>
+                    <field name="income_account_id"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="lab_test_view_tree_accounting" model="ir.ui.view">
+        <field name="name">lab.test.list.accounting</field>
+        <field name="model">lab.test</field>
+        <field name="inherit_id" ref="base_hospital_management.lab_test_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='price']" position="before">
+                <field name="tax_ids" widget="many2many_tags"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="lab_test_result_view_form_accounting" model="ir.ui.view">
+        <field name="name">lab.test.result.form.accounting</field>
+        <field name="model">lab.test.result</field>
+        <field name="inherit_id" ref="base_hospital_management.lab_test_result_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='price']" position="after">
+                <field name="tax_ids" widget="many2many_tags"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hospital_bed_view_form_accounting" model="ir.ui.view">
+        <field name="name">hospital.bed.form.accounting</field>
+        <field name="model">hospital.bed</field>
+        <field name="inherit_id" ref="base_hospital_management.hospital_bed_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group[1]" position="inside">
+                <group string="Accounting Mapping"><field name="product_id"/></group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="patient_room_view_form_accounting" model="ir.ui.view">
+        <field name="name">patient.room.form.accounting</field>
+        <field name="model">patient.room</field>
+        <field name="inherit_id" ref="base_hospital_management.patient_room_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group[1]" position="inside">
+                <group string="Accounting Mapping"><field name="product_id"/></group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_employee_view_form_accounting" model="ir.ui.view">
+        <field name="name">hr.employee.form.hospital.accounting</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="base_hospital_management.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='consultancy_type']" position="after">
+                <field name="consultation_product_id" invisible="job_title != 'Doctor'"/>
+                <field name="followup_product_id" invisible="job_title != 'Doctor'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

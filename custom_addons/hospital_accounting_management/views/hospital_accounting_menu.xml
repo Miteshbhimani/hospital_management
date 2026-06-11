@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="hospital_menu_billing" name="Billing" parent="base_hospital_management.hospital_menu_root" sequence="5" groups="hospital_accounting_management.group_hospital_cashier,hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+    <menuitem id="hospital_accounting_menu_root" name="Billing Operations" parent="hospital_menu_billing" sequence="10" groups="hospital_accounting_management.group_hospital_cashier,hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+    <menuitem id="hospital_accounting_dashboard_menu" name="Dashboard" parent="hospital_accounting_menu_root" action="action_hospital_accounting_dashboard" sequence="1" groups="hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+    <menuitem id="hospital_invoice_menu" name="Hospital Invoices" parent="hospital_accounting_menu_root" action="action_hospital_invoices" sequence="2" groups="hospital_accounting_management.group_hospital_cashier,hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+    <menuitem id="hospital_insurance_accounting_menu" name="Insurance Providers" parent="hospital_accounting_menu_root" action="hospital_insurance_action_accounting" sequence="3" groups="hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+</odoo>

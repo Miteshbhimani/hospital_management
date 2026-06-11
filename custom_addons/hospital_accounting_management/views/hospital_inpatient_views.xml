@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hospital_inpatient_view_form_accounting" model="ir.ui.view">
+        <field name="name">hospital.inpatient.form.accounting</field>
+        <field name="model">hospital.inpatient</field>
+        <field name="inherit_id" ref="base_hospital_management.hospital_inpatient_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_create_lab_test']" position="after">
+                <button name="action_invoice" string="Create Invoice" type="object"
+                        class="oe_highlight" invisible="state != 'admit' or is_invoice"
+                        groups="hospital_accounting_management.group_hospital_cashier,hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+            </xpath>
+            <xpath expr="//header/button[@name='action_discharge']" position="attributes">
+                <attribute name="invisible">state not in ('admit','invoice')</attribute>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_invoice" type="object" class="oe_stat_button"
+                        icon="fa-pencil-square-o" string="Invoice" invisible="not invoice_id"
+                        groups="hospital_accounting_management.group_hospital_cashier,hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+                <button name="action_register_hospital_payment" type="object" class="oe_stat_button"
+                        icon="fa-credit-card" string="Payment" invisible="not invoice_id"
+                        groups="hospital_accounting_management.group_hospital_cashier,hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+            </xpath>
+            <xpath expr="//sheet/group[1]" position="attributes">
+                <attribute name="readonly">state in ('invoice','dis')</attribute>
+            </xpath>
+            <xpath expr="//sheet/group[1]" position="after">
+                <group name="accounting_group" string="Accounting" groups="hospital_accounting_management.group_hospital_cashier,hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager">
+                    <group>
+                        <field name="payment_state" readonly="1"/>
+                        <field name="amount_total" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="amount_residual" readonly="1"/>
+                    </group>
+                </group>
+                <field name="invoice_id" invisible="1"/>
+                <field name="is_invoice" invisible="1"/>
+            </xpath>
+            <xpath expr="//page[@name='surgery']" position="after">
+                <page name="billable_charges" string="Billable Charges"
+                      invisible="state in ('draft','reserve')"
+                      groups="hospital_accounting_management.group_hospital_cashier,hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager">
+                    <field name="charge_ids">
+                        <list editable="bottom">
+                            <field name="date"/>
+                            <field name="name"/>
+                            <field name="product_id"/>
+                            <field name="service_type"/>
+                            <field name="quantity"/>
+                            <field name="price_unit"/>
+                            <field name="tax_ids" widget="many2many_tags"/>
+                            <field name="subtotal" readonly="1"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

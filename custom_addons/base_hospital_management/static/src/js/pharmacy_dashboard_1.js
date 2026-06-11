@@ -14,8 +14,8 @@ import { user } from "@web/core/user";
     var sub_total=0;
     var product_lst=[];
     var uom_lst= [];
-    var invoice=0;
-    var invoice_id=0;
+    var order_name=0;
+    var order_id=0;
     var tax=0;
 export class PharmacyDashboard extends Component {
 //Initialize Pharmacy Dashboard
@@ -118,7 +118,7 @@ export class PharmacyDashboard extends Component {
         }
         this.orm.call('hospital.pharmacy', 'create_sale_order',[data]
         ).then(function (result) {
-            alert('The sale order has been created with refernce number ' +result.invoice)
+            alert('The sale order has been created with refernce number ' +result.order_name)
             window.location.reload()
         })
     }

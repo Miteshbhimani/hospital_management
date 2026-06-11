@@ -58,17 +58,12 @@ class HospitalOutpatient(models.Model):
                                help='Tests for the patient')
     state = fields.Selection(
         [('draft', 'Draft'), ('op', 'OP'), ('inpatient', 'In Patient'),
-         ('invoice', 'Invoiced'), ('cancel', 'Canceled')],
+         ('cancel', 'Canceled')],
         default='draft', string='State', help='State of the outpatient')
     prescription_ids = fields.One2many('prescription.line',
                                        'outpatient_id',
                                        string='Prescription',
                                        help='Prescription for the patient')
-    invoiced = fields.Boolean(default=False, string='Invoiced',
-                              help='True for invoiced')
-    invoice_id = fields.Many2one('account.move', copy=False,
-                                 string='Invoice',
-                                 help='Invoice of the patient')
     attachment_id = fields.Many2one('ir.attachment',
                                     string='Attachment',
                                     help='Attachments related to the'
@@ -143,17 +138,24 @@ class HospitalOutpatient(models.Model):
     @api.model
     def create_medicine_sale_order(self, order_id):
         """Method for creating sale order for medicines"""
-        order = self.sudo().search([('op_reference', 'ilike', order_id)])
+        order = self.sudo().search([('op_reference', 'ilike', order_id)], limit=1)
+        if not order:
+            raise ValidationError('No OPD record found for the selected reference.')
+        if not order.prescription_ids:
+            raise ValidationError('Add at least one prescription line before creating a medicine sale order.')
         sale_order = self.env['sale.order'].sudo().create({
             'partner_id': order.patient_id.id,
         })
         for i in order.prescription_ids:
+            product = i.medicine_id.product_variant_id
             self.env['sale.order.line'].sudo().create({
-                'product_id': i.medicine_id.id,
+                'product_id': product.id,
+                'name': i.medicine_id.display_name,
                 'product_uom_qty': i.quantity,
-                'order': sale_order.id,
+                'price_unit': i.medicine_id.list_price,
+                'order_id': sale_order.id,
             })
-            self.create_invoice()
+        order.is_sale_created = True
 
     @api.model
     def create_file(self, rec_id):
@@ -264,35 +266,6 @@ class HospitalOutpatient(models.Model):
             self.slot = self.doctor_id.latest_slot + self.doctor_id.time_avg
         self.doctor_id.latest_slot = self.slot
         self.state = 'op'
-
-    def create_invoice(self):
-        """Method for creating invoice"""
-        self.state = 'invoice'
-        self.invoice_id = self.env['account.move'].sudo().create({
-            'move_type': 'out_invoice',
-            'date': fields.Date.today(),
-            'invoice_date': fields.Date.today(),
-            'partner_id': self.patient_id.id,
-            'invoice_line_ids': [(
-                0, 0, {
-                    'name': 'Consultation fee',
-                    'quantity': 1,
-                    'price_unit': self.doctor_id.doctor_id.consultancy_charge,
-                }
-            )]
-        })
-        self.invoiced = True
-
-    def action_view_invoice(self):
-        """Method for viewing invoice"""
-        return {
-            'name': 'Invoice',
-            'domain': [('id', '=', self.invoice_id.id)],
-            'type': 'ir.actions.act_window',
-            'res_model': 'account.move',
-            'view_mode': 'list,form',
-            'context': {'create': False},
-        }
 
     def action_print_prescription(self):
         """Method for printing prescription"""

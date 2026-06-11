@@ -104,7 +104,7 @@ class HospitalInpatient(models.Model):
                                   .currency_id.id)
     state = fields.Selection([('draft', 'Draft'),
                               ('reserve', 'Reserved'),
-                              ('admit', 'Admitted'), ('invoice', 'Invoiced'),
+                              ('admit', 'Admitted'),
                               ('dis', 'Discharge')],
                              string='State', readonly=True,
                              help='State of inpatient',
@@ -115,8 +115,6 @@ class HospitalInpatient(models.Model):
                                            'days',
                                       compute='_compute_bed_rent_amount',
                                       copy=False)
-    invoice_id = fields.Many2one('account.move', string='Invoice',
-                                 help='Invoice id of the inpatient', copy=False)
     admit_days = fields.Integer(string='Days',
                                 help='Number of days the inpatient admitted',
                                 compute='_compute_admit_days',
@@ -133,13 +131,6 @@ class HospitalInpatient(models.Model):
     is_ward = fields.Selection([('ward', 'Ward'), ('room', 'Room')],
                                string='Room/Ward',
                                help='Choose where the patient is admitted to')
-    payment_ids = fields.One2many('inpatient.payment',
-                                  'inpatient_id',
-                                  string='Payment Details',
-                                  help='Payment details of the patient')
-    is_invoice = fields.Boolean(string='Is Invoice',
-                                help='View invoice button will be visible if '
-                                     'this field is true')
     prescription_ids = fields.One2many('prescription.line',
                                        'inpatient_id',
                                        string='Prescription',
@@ -254,18 +245,6 @@ class HospitalInpatient(models.Model):
                 ('state', '=', 'avail')
             ]}}
 
-    def action_view_invoice(self):
-        """Method for viewing Invoice"""
-        self.ensure_one()
-        return {
-            'name': 'inpatient Invoice',
-            'view_mode': 'list,form',
-            'res_model': 'account.move',
-            'type': 'ir.actions.act_window',
-            'domain': [('ref', '=', self.name)],
-            'context': "{'create':False}"
-        }
-
     def action_view_tests(self):
         """Returns all lab tests"""
         return {
@@ -337,75 +316,6 @@ class HospitalInpatient(models.Model):
             'state': "dis"
         })
         self.active = False
-
-    def action_invoice(self):
-        """Method for creating invoice"""
-        self.is_invoice = True
-        self.state = 'invoice'
-        inv_line_list = []
-        invoice = self.env['account.move.line'].sudo().search(
-            [('move_id.partner_id', '=', self.patient_id.id),
-             ('move_id.state', '=', 'draft'),
-             ('group_tax_id', '=', False),
-             ('date_maturity', '=', False),
-             ('move_id.move_type', '=', 'out_invoice')])
-        for rec in self:
-            if rec.bed_rent_amount:
-                inv_line_list.append((0, 0, {'name': 'Room/Bed Rent Amount',
-                                             'price_unit': rec.bed_rent_amount,
-                                             'quantity': rec.admit_days,
-                                             }))
-            elif rec.room_rent_amount:
-                inv_line_list.append((0, 0, {'name': 'Room/Bed Rent Amount',
-                                             'price_unit': rec.room_rent_amount,
-                                             'quantity': rec.admit_days,
-                                             }))
-            for line in rec.payment_ids:
-                inv_line_list.append((0, 0, {'name': line.name,
-                                             'price_unit': line.subtotal,
-                                             'quantity': 1,
-                                             'tax_ids': line.tax_ids
-                                             }))
-            for line in self.test_ids:
-                if not line.invoice_id:
-                    inv_line_list.append((0, 0, {
-                        'name': line.test_id.name,
-                        'price_unit': line.total_price,
-                        'quantity': 1
-                    }))
-            for line in self.prescription_ids:
-                inv_line_list.append((0, 0, {
-                    'name': line.medicine_id.name,
-                    'price_unit': line.medicine_id.list_price,
-                    'quantity': line.quantity
-                }))
-            if invoice:
-                for line in invoice.read(
-                        ['name', 'price_unit', 'quantity']):
-                    inv_line_list.append((0, 0, {'name': line['name'],
-                                                 'price_unit': line[
-                                                     'price_unit'],
-                                                 'quantity': line['quantity']}))
-        move = self.env['account.move'].sudo().create({
-            'move_type': 'out_invoice',
-            'date': fields.Date.today(),
-            'ref': self.name,
-            'invoice_date': fields.Date.today(),
-            'partner_id': self.patient_id.id,
-            'line_ids': inv_line_list
-        })
-        self.invoice_id = move.id
-        for rec in invoice:
-            rec.move_id.button_cancel()
-        return {
-            'name': 'Invoice',
-            'res_model': 'account.move',
-            'view_mode': 'form',
-            'view_Id': self.env.ref('account.view_move_form').id,
-            'context': "{'move_type':'out_invoice'}",
-            'type': 'ir.actions.act_window',
-            'res_id': move.id
-        }
 
     def create_new_in_patient(self, domain):
         """Create in-patient from receptionist dashboard"""

@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from . import account_payment_register
 from . import blood_bank
 from . import blood_donation
 from . import contra_indication
@@ -39,7 +38,6 @@ from . import hospital_pharmacy
 from . import hospital_vaccination
 from . import hospital_ward
 from . import hr_employee
-from . import inpatient_payment
 from . import inpatient_surgery
 from . import ir_attachment
 from . import lab_medicine_line
@@ -65,3 +63,6 @@ from . import hospital_emergency
 
 from . import hospital_dashboard_service
 from . import ir_qweb
+from . import hospital_ai_suggestion
+from . import hospital_radiology
+

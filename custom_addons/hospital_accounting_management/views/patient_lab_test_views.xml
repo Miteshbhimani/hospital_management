@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="patient_lab_test_view_form_accounting" model="ir.ui.view">
+        <field name="name">patient.lab.test.form.accounting</field>
+        <field name="model">patient.lab.test</field>
+        <field name="inherit_id" ref="base_hospital_management.patient_lab_test_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_test_end']" position="after">
+                <button name="action_create_invoice" string="Create Invoice" type="object"
+                        class="oe_highlight" invisible="state != 'completed' or invoiced"
+                        groups="hospital_accounting_management.group_hospital_cashier,hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_invoice" type="object" class="oe_stat_button"
+                        icon="fa-edit" invisible="invoice_count == 0"
+                        groups="hospital_accounting_management.group_hospital_cashier,hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager">
+                    <field string="Invoice" name="invoice_count" widget="statinfo"/>
+                </button>
+                <button name="action_register_hospital_payment" type="object" class="oe_stat_button"
+                        icon="fa-credit-card" string="Payment" invisible="not invoice_id"
+                        groups="hospital_accounting_management.group_hospital_cashier,hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager"/>
+            </xpath>
+            <xpath expr="//sheet/group[1]" position="after">
+                <group string="Accounting" groups="hospital_accounting_management.group_hospital_cashier,hospital_accounting_management.group_hospital_accountant,hospital_accounting_management.group_hospital_finance_manager">
+                    <group>
+                        <field name="payment_state" readonly="1"/>
+                        <field name="amount_total" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="amount_residual" readonly="1"/>
+                    </group>
+                </group>
+                <field name="invoice_id" invisible="1"/>
+                <field name="invoiced" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='result_ids']/list/field[@name='attachment']" position="before">
+                <field name="tax_ids" widget="many2many_tags"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
